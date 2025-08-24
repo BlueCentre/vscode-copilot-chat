@@ -188,13 +188,13 @@ export class RemoteAgentContribution implements IDisposable {
 		if (agent === GITHUB_PLATFORM_AGENT_NAME) {
 			return true;
 		}
-		const key = `copilot.agent.${agent}.authorized`;
+		const key = `agent.agent.${agent}.authorized`;
 		return this.vscodeExtensionContext.globalState.get<boolean>(key, false) || this.vscodeExtensionContext.workspaceState.get<boolean>(key, false);
 	}
 
 	private async setAuthorized(agent: string, isGlobal = false) {
 		const memento = isGlobal ? this.vscodeExtensionContext.globalState : this.vscodeExtensionContext.workspaceState;
-		await memento.update(`copilot.agent.${agent}.authorized`, true);
+		await memento.update(`agent.agent.${agent}.authorized`, true);
 	}
 
 	private registerAgent(agentData: IAgent | null): Disposable {
@@ -254,11 +254,11 @@ export class RemoteAgentContribution implements IDisposable {
 				accessToken = this.authenticationService.permissiveGitHubSession?.accessToken;
 				if (!accessToken) {
 					if (this.authenticationService.isMinimalMode) {
-						responseStream.markdown(l10n.t('Minimal mode is enabled. You will need to change `github.copilot.advanced.authPermissions` to `default` to use this feature.'));
+						responseStream.markdown(l10n.t('Minimal mode is enabled. You will need to change `swe.agent.advanced.authPermissions` to `default` to use this feature.'));
 						responseStream.button({
 							title: l10n.t('Open Settings (JSON)'),
 							command: 'workbench.action.openSettingsJson',
-							arguments: [{ revealSetting: { key: 'github.copilot.advanced.authPermissions' } }]
+							arguments: [{ revealSetting: { key: 'swe.agent.advanced.authPermissions' } }]
 						});
 					} else {
 						// Otherwise, show the permissive session upgrade prompt because it's required
@@ -301,7 +301,7 @@ export class RemoteAgentContribution implements IDisposable {
 
 				// Collect copilot skills and references to be sent in the request
 				const copilotReferences = [];
-				const { copilot_skills } = await this.resolveCopilotSkills(slug, request);
+				const { agent_skills } = await this.resolveCopilotSkills(slug, request);
 
 				let hasIgnoredFiles = false;
 				try {
@@ -343,8 +343,8 @@ export class RemoteAgentContribution implements IDisposable {
 							content: (request.acceptedConfirmationData?.length || request.rejectedConfirmationData?.length)
 								? []
 								: [{ type: Raw.ChatCompletionContentPartKind.Text, text: resolved.message }],
-							...(copilotReferences.length ? { copilot_references: copilotReferences } : undefined),
-							...(confirmations?.length ? { copilot_confirmations: confirmations } : undefined),
+							...(copilotReferences.length ? { agent_references: copilotReferences } : undefined),
+							...(confirmations?.length ? { agent_confirmations: confirmations } : undefined),
 						}
 					],
 					async (result, _, delta) => {
@@ -458,8 +458,8 @@ export class RemoteAgentContribution implements IDisposable {
 					undefined,
 					{
 						secretKey: accessToken,
-						copilot_thread_id: sessionId,
-						...(copilot_skills ? { copilot_skills } : undefined)
+						agent_thread_id: sessionId,
+						...(agent_skills ? { agent_skills } : undefined)
 					},
 					true,
 					{
@@ -467,7 +467,7 @@ export class RemoteAgentContribution implements IDisposable {
 					}
 				);
 
-				metadata['copilot_references'] = [...new Set(reportedReferences.values()).values(), ...agentReferences];
+				metadata['agent_references'] = [...new Set(reportedReferences.values()).values(), ...agentReferences];
 				if (response.type === ChatFetchResponseType.Success && hasIgnoredFiles) {
 					responseStream.markdown(HAS_IGNORED_FILES_MESSAGE);
 				}
@@ -537,7 +537,7 @@ export class RemoteAgentContribution implements IDisposable {
 					provideCompletionItems: async (query, token) => {
 						const items = await this.getPlatformAgentSkills();
 						return items.map<ChatCompletionItem>(i => {
-							const item = new ChatCompletionItem(`copilot.${i.name}`, '#' + i.name, [{ value: i.insertText, level: ChatVariableLevel.Full, description: i.description }]);
+							const item = new ChatCompletionItem(`agent.${i.name}`, '#' + i.name, [{ value: i.insertText, level: ChatVariableLevel.Full, description: i.description }]);
 							item.command = i.command;
 							item.detail = i.description;
 							return item;
@@ -702,7 +702,7 @@ export class RemoteAgentContribution implements IDisposable {
 		return this.enabledSkillsPromise;
 	}
 
-	private async resolveCopilotSkills(agent: string, request: ChatRequest): Promise<{ copilot_skills: string[] }> {
+	private async resolveCopilotSkills(agent: string, request: ChatRequest): Promise<{ agent_skills: string[] }> {
 		if (agent === GITHUB_PLATFORM_AGENT_NAME) {
 			const skills = new Set<string>();
 			for (const variable of request.references) {
@@ -710,10 +710,10 @@ export class RemoteAgentContribution implements IDisposable {
 					skills.add(GITHUB_PLATFORM_AGENT_SKILLS[variable.name]);
 				}
 			}
-			return { copilot_skills: [...skills] };
+			return { agent_skills: [...skills] };
 		}
 
-		return { copilot_skills: [] };
+		return { agent_skills: [] };
 	}
 
 	private async getPlatformAgentSkills() {
@@ -758,7 +758,7 @@ function prepareRemoteAgentHistory(agentId: string, context: ChatContext): Raw.C
 		}
 
 		if (h instanceof ChatResponseTurn) {
-			const copilot_references = h.result.metadata?.['copilot_references'];
+			const agent_references = h.result.metadata?.['agent_references'];
 			const content = h.response.map(r => {
 				if (r instanceof ChatResponseMarkdownPart) {
 					return r.value.value;
@@ -771,7 +771,7 @@ function prepareRemoteAgentHistory(agentId: string, context: ChatContext): Raw.C
 			result.push({
 				role: Raw.ChatRole.Assistant,
 				content: [{ type: Raw.ChatCompletionContentPartKind.Text, text: content }],
-				...(copilot_references ? { copilot_references } : undefined)
+				...(agent_references ? { agent_references } : undefined)
 			});
 		}
 	}

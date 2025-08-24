@@ -214,7 +214,7 @@ print(1)`;
 		// This is temporary until the chat.advanced.enableApplyPatchForNotebooks setting is available.
 		const packageJson = JSON.parse(fs.readFileSync(__dirname + '/../../../../../package.json', 'utf8'));
 		const languageModelTools = packageJson.contributes.languageModelTools;
-		const applyPatch = languageModelTools.find((tool: any) => tool.name === 'copilot_applyPatch');
+		const applyPatch = languageModelTools.find((tool: any) => tool.name === 'agent_applyPatch');
 		expect(applyPatch).toBeDefined();
 		const applyPatchToolInfo = {
 			name: ToolName.ApplyPatch,

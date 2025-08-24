@@ -113,7 +113,7 @@ export class TestsIntent implements IIntent {
 		const fileRefs: [ChatPromptReference, URI][] = [];
 
 		for (const ref of refs) {
-			if (ref.id === 'copilot.file' || ref.id === 'vscode.file') {
+			if (ref.id === 'agent.file' || ref.id === 'vscode.file') {
 				if (isUri(ref.value)) {
 					hashFileCount += 1;
 					fileRefs.push([ref, ref.value]);
@@ -166,7 +166,7 @@ export class TestsIntent implements IIntent {
 
 			// FIXME@ulugbekna: I don't like how I fish for #file references
 
-			if (ref.id !== 'vscode.file' && ref.id !== 'copilot.file') {
+			if (ref.id !== 'vscode.file' && ref.id !== 'agent.file') {
 				continue;
 			}
 

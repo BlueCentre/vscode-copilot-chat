@@ -25,7 +25,7 @@ export class ToolsContribution extends Disposable {
 			this._register(vscode.lm.registerTool(getContributedToolName(name), tool));
 		}
 
-		this._register(vscode.commands.registerCommand('github.copilot.debug.resetVirtualToolGroups', async () => {
+		this._register(vscode.commands.registerCommand('swe.agent.debug.resetVirtualToolGroups', async () => {
 			await toolGrouping.clear();
 			vscode.window.showInformationMessage('Tool groups have been reset. They will be regenerated on the next agent request.');
 		}));

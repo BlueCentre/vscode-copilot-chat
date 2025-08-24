@@ -94,7 +94,7 @@ export function create(info: tt.server.PluginCreateInfo): tt.LanguageService {
 	if (info.session !== undefined) {
 		try {
 
-			info.session.addProtocolHandler('_.copilot.ping', () => {
+			info.session.addProtocolHandler('_.agent.ping', () => {
 				return { response: pingResult, responseRequired: true };
 			});
 			try {
@@ -103,23 +103,23 @@ export function create(info: tt.server.PluginCreateInfo): tt.LanguageService {
 				if (versionSupported) {
 					computeContextSession = new LanguageServerSession(info.session, new NodeHost());
 					languageServiceHost = info.languageServiceHost;
-					info.session.addProtocolHandler('_.copilot.context', computeContextHandler);
+					info.session.addProtocolHandler('_.agent.context', computeContextHandler);
 				}
 
 			} catch (e) {
 				if (e instanceof Error) {
 					pingResult = { kind: 'error', message: e.message, stack: e.stack };
-					info.session.logError(e, '_.copilot.installHandler');
+					info.session.logError(e, '_.agent.installHandler');
 				} else {
 					pingResult = { kind: 'error', message: 'Unknown error' };
-					info.session.logError(new Error('Unknown error'), '_.copilot.installHandler');
+					info.session.logError(new Error('Unknown error'), '_.agent.installHandler');
 				}
 			}
 		} catch (error) {
 			if (error instanceof Error) {
-				info.session.logError(error, '_.copilot.installPingHandler');
+				info.session.logError(error, '_.agent.installPingHandler');
 			} else {
-				info.session.logError(new Error('Unknown error'), '_.copilot.installPingHandler');
+				info.session.logError(new Error('Unknown error'), '_.agent.installPingHandler');
 			}
 		} finally {
 			installAttempted = true;

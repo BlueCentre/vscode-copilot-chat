@@ -54,16 +54,16 @@ export async function executeIntentTest(testingServiceCollection: TestingService
 
 function detectedParticipantToIntentId(detected: ChatParticipantDetectionResult) {
 	switch (detected.participant) {
-		case 'github.copilot.default':
+		case 'swe.agent.default':
 			return 'unknown';
-		case 'github.copilot.editor':
+		case 'swe.agent.editor':
 			if (detected.command) {
 				return detected.command;
 			}
 			return 'unknown';
-		case 'github.copilot.terminalPanel':
+		case 'swe.agent.terminalPanel':
 			return 'terminalExplain';
-		case 'github.copilot.workspace':
+		case 'swe.agent.workspace':
 			switch (detected.command) {
 				case 'new':
 					return 'new';
@@ -76,7 +76,7 @@ function detectedParticipantToIntentId(detected: ChatParticipantDetectionResult)
 				default:
 					return 'workspace';
 			}
-		case 'github.copilot.vscode':
+		case 'swe.agent.vscode':
 			return 'vscode';
 		case 'github.copilot-dynamic.platform':
 			return 'github.copilot-dynamic.platform';

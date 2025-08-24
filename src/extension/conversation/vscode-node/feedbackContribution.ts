@@ -14,7 +14,7 @@ export class FeedbackCommandContribution extends Disposable {
 	) {
 		super();
 
-		this._register(vscode.commands.registerCommand('github.copilot.report', async (title: string = '') => {
+		this._register(vscode.commands.registerCommand('swe.agent.report', async (title: string = '') => {
 			const token = this.authenticationService.copilotToken;
 			const isTeamMember = token?.isVscodeTeamMember;
 			const isInternal = token?.isInternal;

@@ -29,7 +29,7 @@ export class HeatmapServiceImpl implements IHeatmapService {
 		@IFileSystemService fileSystemService: IFileSystemService,
 	) {
 
-		this._store.add(vscode.commands.registerCommand('github.copilot.chat.clearTemporalContext', () => {
+		this._store.add(vscode.commands.registerCommand('swe.agent.chat.clearTemporalContext', () => {
 			this._entries.clear();
 			vscode.window.showInformationMessage('Temporal Context Cleared', { modal: true });
 		}));

@@ -52,7 +52,7 @@ function combineCancellationTokens(token1: CancellationToken, token2: Cancellati
 }
 
 let inProgress: CancellationTokenSource | undefined;
-const scmProgressKey = 'github.copilot.chat.review.sourceControlProgress';
+const scmProgressKey = 'swe.agent.chat.review.sourceControlProgress';
 export async function doReview(
 	scopeSelector: IScopeSelector,
 	instantiationService: IInstantiationService,

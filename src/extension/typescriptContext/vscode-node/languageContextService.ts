@@ -1181,7 +1181,7 @@ export class LanguageContextServiceImpl implements ILanguageContextService, vsco
 			await typeScriptExtension.activate();
 
 			// Send a ping request to see if the TS server plugin got installed correctly.
-			const response: protocol.PingResponse | undefined = await vscode.commands.executeCommand('typescript.tsserverRequest', '_.copilot.ping', LanguageContextServiceImpl.ExecConfig, new vscode.CancellationTokenSource().token);
+			const response: protocol.PingResponse | undefined = await vscode.commands.executeCommand('typescript.tsserverRequest', '_.agent.ping', LanguageContextServiceImpl.ExecConfig, new vscode.CancellationTokenSource().token);
 			this.telemetrySender.sendActivationTelemetry(response, undefined);
 			if (response !== undefined) {
 				if (response.body?.kind === 'ok') {
@@ -1232,7 +1232,7 @@ export class LanguageContextServiceImpl implements ILanguageContextService, vsco
 			let response: protocol.ComputeContextResponse;
 			let inflightRequest: InflightRequestInfo | undefined = undefined;
 			try {
-				const promise: Thenable<protocol.ComputeContextResponse> = vscode.commands.executeCommand('typescript.tsserverRequest', '_.copilot.context', args, LanguageContextServiceImpl.ExecConfig, token);
+				const promise: Thenable<protocol.ComputeContextResponse> = vscode.commands.executeCommand('typescript.tsserverRequest', '_.agent.context', args, LanguageContextServiceImpl.ExecConfig, token);
 				inflightRequest = new InflightRequestInfo(document, position, context, tokenSource, promise);
 				this.inflightCachePopulationRequest = inflightRequest;
 				response = await promise;
@@ -1526,7 +1526,7 @@ class CachePopulationTrigger implements vscode.Disposable {
 	}
 }
 
-const showContextInspectorViewContextKey = `github.copilot.chat.showContextInspectorView`;
+const showContextInspectorViewContextKey = `swe.agent.chat.showContextInspectorView`;
 export class InlineCompletionContribution implements vscode.Disposable, TokenBudgetProvider {
 
 	private disposables: DisposableStore;
@@ -1550,11 +1550,11 @@ export class InlineCompletionContribution implements vscode.Disposable, TokenBud
 
 		this.disposables = new DisposableStore();
 		if (languageContextService instanceof LanguageContextServiceImpl) {
-			this.disposables.add(vscode.commands.registerCommand('github.copilot.debug.showContextInspectorView', async () => {
+			this.disposables.add(vscode.commands.registerCommand('swe.agent.debug.showContextInspectorView', async () => {
 				await vscode.commands.executeCommand('setContext', showContextInspectorViewContextKey, true);
-				await vscode.commands.executeCommand('context-inspector.focus');
+				await vscode.commands.executeCommand('agent-context-inspector.focus');
 			}));
-			this.disposables.add(vscode.window.registerTreeDataProvider('context-inspector', new InspectorDataProvider(languageContextService)));
+			this.disposables.add(vscode.window.registerTreeDataProvider('agent-context-inspector', new InspectorDataProvider(languageContextService)));
 		}
 
 		// Check if there are any TypeScript files open in the workspace.

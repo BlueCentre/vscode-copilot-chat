@@ -32,7 +32,7 @@ export namespace Copilot {
 	* Example:
 	* ```
 	* const copilot = vscode.extensions.getExtension("github.copilot");
-	* const contextProviderAPI = copilot.exports.getContextProviderAPI("v1") as ContextProviderApiV1;
+	* const contextProviderAPI = agent.exports.getContextProviderAPI("v1") as ContextProviderApiV1;
 	* ```
 	*/
 	export interface ContextProviderApiV1 {

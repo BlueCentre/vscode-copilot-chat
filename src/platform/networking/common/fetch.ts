@@ -330,8 +330,8 @@ export interface OptionalChatRequestParams {
 	secretKey?: string;
 
 	/** For github remote agents */
-	copilot_thread_id?: string;
-	copilot_skills?: string[];
+	agent_thread_id?: string;
+	agent_skills?: string[];
 
 	functions?: OpenAiFunctionDef[];
 	function_call?: { name: string };

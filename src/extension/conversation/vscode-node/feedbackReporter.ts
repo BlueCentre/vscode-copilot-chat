@@ -106,7 +106,7 @@ export class FeedbackReporter extends Disposable implements IFeedbackReporter {
 				let content = getTextPart(message.content);
 
 				if (message.content.some(part => part.type === Raw.ChatCompletionContentPartKind.CacheBreakpoint)) {
-					content += `\ncopilot_cache_control: { type: 'ephemeral' }`;
+					content += `\nagent_cache_control: { type: 'ephemeral' }`;
 				}
 				if (message.role === Raw.ChatRole.Assistant && message.toolCalls?.length) {
 					if (content) {
@@ -152,7 +152,7 @@ export class FeedbackReporter extends Disposable implements IFeedbackReporter {
 
 	async reportSearch(kind: SearchFeedbackKind): Promise<void> {
 		/* __GDPR__
-			"copilot.search.feedback" : {
+			"agent.search.feedback" : {
 				"owner": "osortega",
 				"comment": "Feedback telemetry for copilot search",
 				"kind": { "classification": "SystemMetaData", "purpose": "FeatureInsight", "comment": "Feedback provided by the user." },
@@ -165,7 +165,7 @@ export class FeedbackReporter extends Disposable implements IFeedbackReporter {
 				"strategy": { "classification": "SystemMetaData", "purpose": "FeatureInsight", "comment": "Indicates the strategy used for the search." }
 			}
 		*/
-		this.telemetryService.sendMSFTTelemetryEvent('copilot.search.feedback', {
+		this.telemetryService.sendMSFTTelemetryEvent('agent.search.feedback', {
 			kind,
 			rankResult: SemanticSearchTextSearchProvider.feedBackTelemetry.rankResult,
 			strategy: SemanticSearchTextSearchProvider.feedBackTelemetry.strategy,

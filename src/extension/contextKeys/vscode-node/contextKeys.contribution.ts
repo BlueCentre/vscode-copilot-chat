@@ -16,23 +16,23 @@ import { Disposable } from '../../../util/vs/base/common/lifecycle';
 import { autorun } from '../../../util/vs/base/common/observableInternal';
 
 const welcomeViewContextKeys = {
-	Activated: 'github.copilot-chat.activated',
-	Offline: 'github.copilot.offline',
-	IndividualDisabled: 'github.copilot.interactiveSession.individual.disabled',
-	IndividualExpired: 'github.copilot.interactiveSession.individual.expired',
-	ContactSupport: 'github.copilot.interactiveSession.contactSupport',
-	EnterpriseDisabled: 'github.copilot.interactiveSession.enterprise.disabled',
-	CopilotChatDisabled: 'github.copilot.interactiveSession.chatDisabled'
+	Activated: 'vitruvian.agent-chat.activated',
+	Offline: 'swe.agent.offline',
+	IndividualDisabled: 'swe.agent.interactiveSession.individual.disabled',
+	IndividualExpired: 'swe.agent.interactiveSession.individual.expired',
+	ContactSupport: 'swe.agent.interactiveSession.contactSupport',
+	EnterpriseDisabled: 'swe.agent.interactiveSession.enterprise.disabled',
+	CopilotChatDisabled: 'swe.agent.interactiveSession.chatDisabled'
 };
 
-const chatQuotaExceededContextKey = 'github.copilot.chat.quotaExceeded';
+const chatQuotaExceededContextKey = 'swe.agent.chat.quotaExceeded';
 
-const showLogViewContextKey = `github.copilot.chat.showLogView`;
-const debugReportFeedbackContextKey = 'github.copilot.debugReportFeedback';
+const showLogViewContextKey = `swe.agent.chat.showLogView`;
+const debugReportFeedbackContextKey = 'swe.agent.debugReportFeedback';
 
-const previewFeaturesDisabledContextKey = 'github.copilot.previewFeaturesDisabled';
+const previewFeaturesDisabledContextKey = 'swe.agent.previewFeaturesDisabled';
 
-const debugContextKey = 'github.copilot.chat.debug';
+const debugContextKey = 'swe.agent.chat.debug';
 
 export class ContextKeysContribution extends Disposable {
 
@@ -52,11 +52,11 @@ export class ContextKeysContribution extends Disposable {
 
 		void this._inspectContext().catch(console.error);
 		this._register(_authenticationService.onDidAuthenticationChange(async () => await this._onAuthenticationChange()));
-		this._register(commands.registerCommand('github.copilot.refreshToken', async () => await this._inspectContext()));
-		this._register(commands.registerCommand('github.copilot.debug.showChatLogView', async () => {
+		this._register(commands.registerCommand('swe.agent.refreshToken', async () => await this._inspectContext()));
+		this._register(commands.registerCommand('swe.agent.debug.showChatLogView', async () => {
 			this._showLogView = true;
 			await commands.executeCommand('setContext', showLogViewContextKey, true);
-			await commands.executeCommand('copilot-chat.focus');
+			await commands.executeCommand('agent-chat.focus');
 		}));
 		this._register({ dispose: () => this._cancelPendingOfflineCheck() });
 		this._register(window.onDidChangeWindowState(() => this._runOfflineCheck('Window state change')));

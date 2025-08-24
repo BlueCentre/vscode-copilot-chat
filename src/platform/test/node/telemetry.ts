@@ -21,7 +21,7 @@ export type EventData = {
 		ver: number;
 		name: string;
 		properties: {
-			copilot_build: string;
+			agent_build: string;
 			common_os: string;
 			[key: string]: string;
 		};
@@ -54,7 +54,7 @@ export type ExceptionData = {
 			}
 		];
 		properties: {
-			copilot_build: string;
+			agent_build: string;
 			common_os: string;
 			[key: string]: string;
 		};

@@ -15,7 +15,7 @@ export class SnippyNotifier {
 	private static readonly matchCodeMessage = 'We found a reference to public code in a recent suggestion. To learn more about public code references, review the [documentation](https://aka.ms/github-copilot-match-public-code).';
 	private static readonly MatchAction = 'View Reference';
 	private static readonly SettingAction = 'Change Setting';
-	public static readonly CodeReferenceKey = 'copilot.chat.codeReference.notified';
+	public static readonly CodeReferenceKey = 'agent.chat.codeReference.notified';
 
 	constructor(
 		@INotificationService private readonly notificationService: INotificationService,

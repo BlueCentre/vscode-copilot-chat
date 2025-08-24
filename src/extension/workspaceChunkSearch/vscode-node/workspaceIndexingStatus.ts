@@ -17,8 +17,8 @@ import { commandUri } from '../../linkify/common/commands';
 import { buildLocalIndexCommandId, buildRemoteIndexCommandId } from './commands';
 
 
-const reauthenticateCommandId = '_copilot.workspaceIndex.signInAgain';
-const signInFirstTimeCommandId = '_copilot.workspaceIndex.signInToAnything';
+const reauthenticateCommandId = '_agent.workspaceIndex.signInAgain';
+const signInFirstTimeCommandId = '_agent.workspaceIndex.signInToAnything';
 
 interface WorkspaceIndexStateReporter {
 	readonly onDidChangeIndexState: Event<void>;
@@ -87,7 +87,7 @@ export class ChatStatusWorkspaceIndexingStatus extends Disposable {
 
 		this._statusReporter = workspaceChunkSearch;
 
-		this._statusItem = this._register(vscode.window.createChatStatusItem('copilot.workspaceIndexStatus'));
+		this._statusItem = this._register(vscode.window.createChatStatusItem('agent.workspaceIndexStatus'));
 		this._statusItem.title = statusTitle;
 
 		this._register(this._statusReporter.onDidChangeIndexState(() => this._updateStatusItem()));
