@@ -63,7 +63,7 @@ describe('Configurations', () => {
 
 		// Validate Internal settings have the correct prefix
 		internalKeys.forEach(key => {
-			expect(key, 'Internal settings must start with github.copilot.chat.advanced.').toMatch(/^github\.copilot\.chat\.advanced\./);
+			expect(key, 'Internal settings must start with swe.agent.chat.advanced.').toMatch(/^github\.copilot\.chat\.advanced\./);
 		});
 
 		// Validate public settings in code are in package.json

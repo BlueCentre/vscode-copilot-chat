@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { IVSCodeExtensionContext } from '../../../platform/extContext/common/extensionContext';
 
-export const NEW_WORKSPACE_STORAGE_KEY = 'copilot.newWorkspaceAgent.workspaceContexts';
+export const NEW_WORKSPACE_STORAGE_KEY = 'agent.newWorkspaceAgent.workspaceContexts';
 
 export interface INewWorkspaceStoredData {
 	workspaceURI: string;

@@ -73,8 +73,8 @@ export class EmbeddingsChunkSearch extends Disposable implements IWorkspaceChunk
 	private readonly _reindexDisposables = this._register(new DisposableStore());
 	private readonly _reindexRequests = new ResourceMap<Delayer<void>>;
 
-	private readonly _hasRequestedManualIndexingKey = 'copilot.embeddingsChunkSearch.hasRequestedManualIndexing';
-	private readonly _hasPromptedExpandedIndexingKey = 'copilot.embeddingsChunkSearch.hasRequestedExpandedIndexing';
+	private readonly _hasRequestedManualIndexingKey = 'agent.embeddingsChunkSearch.hasRequestedManualIndexing';
+	private readonly _hasPromptedExpandedIndexingKey = 'agent.embeddingsChunkSearch.hasRequestedExpandedIndexing';
 
 	constructor(
 		embeddingsIndex: WorkspaceChunkEmbeddingsIndex,

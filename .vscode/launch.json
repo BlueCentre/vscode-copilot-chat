@@ -7,7 +7,9 @@
 			"name": "Launch Copilot Extension",
 			"runtimeExecutable": "${execPath}",
 			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}"
+				"--extensionDevelopmentPath=${workspaceFolder}",
+				"--enable-proposed-api",
+				"Vitruvian.swe-agent-chat"
 			],
 			"smartStep": true,
 			"sourceMaps": true,
@@ -30,7 +32,9 @@
 			"name": "Launch Copilot Extension - Watch Mode",
 			"runtimeExecutable": "${execPath}",
 			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}"
+				"--extensionDevelopmentPath=${workspaceFolder}",
+				"--enable-proposed-api",
+				"Vitruvian.swe-agent-chat"
 			],
 			"smartStep": true,
 			"sourceMaps": true,
@@ -106,6 +110,10 @@
 			"outFiles": [
 				"${workspaceFolder}/dist/**/*.js",
 				"!**/node_modules/**"
+			],
+			"args": [
+				"--enable-proposed-api",
+				"Vitruvian.swe-agent-chat"
 			],
 			"presentation": {
 				"group": "1_launch"
@@ -227,7 +235,9 @@
 			"name": "Launch Copilot Extension - TS Server in Debug Mode",
 			"runtimeExecutable": "${execPath}",
 			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}"
+				"--extensionDevelopmentPath=${workspaceFolder}",
+				"--enable-proposed-api",
+				"Vitruvian.swe-agent-chat"
 			],
 			"smartStep": true,
 			"sourceMaps": true,

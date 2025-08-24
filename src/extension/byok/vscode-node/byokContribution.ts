@@ -25,6 +25,12 @@ import { OAIBYOKLMProvider } from './openAIProvider';
 import { OpenRouterLMProvider } from './openRouterProvider';
 import { XAIBYOKLMProvider } from './xAIProvider';
 
+// Global (per-extension-host) guard to avoid duplicate vendor registration errors when
+// multiple BYOKContrib instances are constructed (e.g. due to multiple activations,
+// hot reloads, or overlapping authentication change events). VS Code rejects
+// duplicate provider names; previously this surfaced noisy notifications.
+const _registeredByokVendors = new Set<string>();
+
 export class BYOKContrib extends Disposable implements IExtensionContribution {
 	public readonly id: string = 'byok-contribution';
 	private readonly _byokStorageService: IBYOKStorageService;
@@ -41,7 +47,7 @@ export class BYOKContrib extends Disposable implements IExtensionContribution {
 		@IInstantiationService private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
-		this._register(commands.registerCommand('github.copilot.chat.manageBYOK', async (vendor: string) => {
+		this._register(commands.registerCommand('swe.agent.chat.manageBYOK', async (vendor: string) => {
 			const provider = this._providers.get(vendor);
 
 			// Show quick pick for Azure and CustomOAI providers
@@ -126,6 +132,12 @@ export class BYOKContrib extends Disposable implements IExtensionContribution {
 			this._providers.set(CustomOAIBYOKModelProvider.providerName.toLowerCase(), instantiationService.createInstance(CustomOAIBYOKModelProvider, this._byokStorageService));
 
 			for (const [providerName, provider] of this._providers) {
+				if (_registeredByokVendors.has(providerName)) {
+					// Skip duplicate registration instead of throwing user-facing error
+					this._logService.warn(`BYOK: Provider '${providerName}' already registered – skipping duplicate registration.`);
+					continue;
+				}
+				_registeredByokVendors.add(providerName);
 				this._store.add(lm.registerLanguageModelChatProvider(providerName, provider));
 			}
 		}

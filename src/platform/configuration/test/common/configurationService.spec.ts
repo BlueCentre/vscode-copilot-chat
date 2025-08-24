@@ -15,7 +15,7 @@ suite('AbstractConfigurationService', () => {
 		});
 
 		test('should return the same value for the same input', () => {
-			const input = 'github.copilot.advanced.testSetting;user1';
+			const input = 'swe.agent.advanced.testSetting;user1';
 			const value1 = AbstractConfigurationService._extractHashValue(input);
 			const value2 = AbstractConfigurationService._extractHashValue(input);
 			assert.strictEqual(value1, value2);
@@ -34,14 +34,14 @@ suite('AbstractConfigurationService', () => {
 		});
 
 		test('should produce different values when username changes', () => {
-			const setting = 'github.copilot.advanced.testSetting';
+			const setting = 'swe.agent.advanced.testSetting';
 			const value1 = AbstractConfigurationService._extractHashValue(`${setting};user1`);
 			const value2 = AbstractConfigurationService._extractHashValue(`${setting};user2`);
 			assert.notStrictEqual(value1, value2);
 		});
 
 		test('should be deterministic for complex strings', () => {
-			const input = 'github.copilot.advanced.someComplexSetting;username123!@#$%^&*()';
+			const input = 'swe.agent.advanced.someComplexSetting;username123!@#$%^&*()';
 			const expected = AbstractConfigurationService._extractHashValue(input);
 
 			// Call multiple times to ensure determinism

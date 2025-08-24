@@ -22,7 +22,7 @@ export class DebugCommandsContribution extends Disposable {
 	) {
 		super();
 
-		this._register(vscode.commands.registerCommand('github.copilot.debug.generateSTest', async () => {
+		this._register(vscode.commands.registerCommand('swe.agent.debug.generateSTest', async () => {
 			if (!this.feedbackReporter.canReport) {
 				return;
 			}
@@ -47,7 +47,7 @@ export class DebugCommandsContribution extends Disposable {
 			}
 		};
 
-		this._register(vscode.commands.registerCommand('github.copilot.createLaunchJsonFileWithContents', async (launchConfig: IStartDebuggingParsedResponse) => {
+		this._register(vscode.commands.registerCommand('swe.agent.createLaunchJsonFileWithContents', async (launchConfig: IStartDebuggingParsedResponse) => {
 			// Define the path for the .vscode/launch.json file
 			const workspaceFolders = vscode.workspace.workspaceFolders;
 			if (!workspaceFolders?.length) {
@@ -60,10 +60,10 @@ export class DebugCommandsContribution extends Disposable {
 			await launchConfigService.show(workspaceFolders[0].uri, launchConfig.configurations[0].name);
 		}));
 
-		this._register(vscode.commands.registerCommand('github.copilot.debug.generateConfiguration', async () => {
+		this._register(vscode.commands.registerCommand('swe.agent.debug.generateConfiguration', async () => {
 			await vscode.commands.executeCommand('workbench.action.chat.open', '@vscode /startDebugging', { location: vscode.ChatLocation.Panel });
 		}));
-		this._register((vscode.commands.registerCommand('github.copilot.startDebugging', async (config: IStartDebuggingParsedResponse, progress) => {
+		this._register((vscode.commands.registerCommand('swe.agent.startDebugging', async (config: IStartDebuggingParsedResponse, progress) => {
 			const result = await this.launchConfigService.resolveConfigurationInputs(config);
 			if (result?.config) {
 				await ensureTask(undefined, config);

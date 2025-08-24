@@ -51,7 +51,7 @@ suite('Extension tests', function () {
 			extensionMode: ExtensionMode.Test,
 			subscriptions: [] as { dispose(): any }[],
 			extension: {
-				id: 'copilot.extension-test',
+				id: 'agent.extension-test',
 				packageJSON: {},
 			},
 		} as ExtensionContext;

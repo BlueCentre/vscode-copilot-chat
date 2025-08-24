@@ -20,12 +20,12 @@ import { IInstantiationService } from '../../../util/vs/platform/instantiation/c
 import { ChatRequest } from '../../../vscodeTypes';
 import { IExtensionContribution } from '../../common/contributions';
 
-const showHtmlCommand = 'vscode.copilot.chat.showRequestHtmlItem';
-const exportLogItemCommand = 'github.copilot.chat.debug.exportLogItem';
-const exportPromptArchiveCommand = 'github.copilot.chat.debug.exportPromptArchive';
-const exportPromptLogsAsJsonCommand = 'github.copilot.chat.debug.exportPromptLogsAsJson';
-const exportAllPromptLogsAsJsonCommand = 'github.copilot.chat.debug.exportAllPromptLogsAsJson';
-const saveCurrentMarkdownCommand = 'github.copilot.chat.debug.saveCurrentMarkdown';
+const showHtmlCommand = 'vscode.agent.chat.showRequestHtmlItem';
+const exportLogItemCommand = 'swe.agent.chat.debug.exportLogItem';
+const exportPromptArchiveCommand = 'swe.agent.chat.debug.exportPromptArchive';
+const exportPromptLogsAsJsonCommand = 'swe.agent.chat.debug.exportPromptLogsAsJson';
+const exportAllPromptLogsAsJsonCommand = 'swe.agent.chat.debug.exportAllPromptLogsAsJson';
+const saveCurrentMarkdownCommand = 'swe.agent.chat.debug.saveCurrentMarkdown';
 
 export class RequestLogTree extends Disposable implements IExtensionContribution {
 	readonly id = 'requestLogTree';
@@ -37,7 +37,7 @@ export class RequestLogTree extends Disposable implements IExtensionContribution
 	) {
 		super();
 		this.chatRequestProvider = this._register(instantiationService.createInstance(ChatRequestProvider));
-		this._register(vscode.window.registerTreeDataProvider('copilot-chat', this.chatRequestProvider));
+		this._register(vscode.window.registerTreeDataProvider('agent-chat', this.chatRequestProvider));
 
 		let server: RequestServer | undefined;
 
@@ -427,7 +427,7 @@ export class RequestLogTree extends Disposable implements IExtensionContribution
 			} else {
 				// Generate a default filename based on current timestamp
 				const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
-				const defaultFilename = `copilot_all_prompts_${timestamp}.chatreplay.json`;
+				const defaultFilename = `agent_all_prompts_${timestamp}.chatreplay.json`;
 
 				// Show save dialog
 				const dialogResult = await vscode.window.showSaveDialog({
@@ -750,7 +750,7 @@ class LogTreeFilters extends Disposable {
 	}
 
 	private getStorageKey(name: string): string {
-		return `github.copilot.chat.debug.${name}Hidden`;
+		return `swe.agent.chat.debug.${name}Hidden`;
 	}
 
 	setElementsShown(value: boolean) {
@@ -791,7 +791,7 @@ class LogTreeFilters extends Disposable {
 	}
 
 	private setShown(name: string, value: boolean): void {
-		vscode.commands.executeCommand('setContext', `github.copilot.chat.debug.${name}Hidden`, !value);
+		vscode.commands.executeCommand('setContext', `swe.agent.chat.debug.${name}Hidden`, !value);
 		this.vscodeExtensionContext.workspaceState.update(this.getStorageKey(name), !value);
 		this._onDidChangeFilters.fire();
 	}
@@ -801,11 +801,11 @@ class LogTreeFilterCommands extends Disposable {
 	constructor(filters: LogTreeFilters) {
 		super();
 
-		this._register(vscode.commands.registerCommand('github.copilot.chat.debug.showElements', () => filters.setElementsShown(true)));
-		this._register(vscode.commands.registerCommand('github.copilot.chat.debug.hideElements', () => filters.setElementsShown(false)));
-		this._register(vscode.commands.registerCommand('github.copilot.chat.debug.showTools', () => filters.setToolsShown(true)));
-		this._register(vscode.commands.registerCommand('github.copilot.chat.debug.hideTools', () => filters.setToolsShown(false)));
-		this._register(vscode.commands.registerCommand('github.copilot.chat.debug.showNesRequests', () => filters.setNesRequestsShown(true)));
-		this._register(vscode.commands.registerCommand('github.copilot.chat.debug.hideNesRequests', () => filters.setNesRequestsShown(false)));
+		this._register(vscode.commands.registerCommand('swe.agent.chat.debug.showElements', () => filters.setElementsShown(true)));
+		this._register(vscode.commands.registerCommand('swe.agent.chat.debug.hideElements', () => filters.setElementsShown(false)));
+		this._register(vscode.commands.registerCommand('swe.agent.chat.debug.showTools', () => filters.setToolsShown(true)));
+		this._register(vscode.commands.registerCommand('swe.agent.chat.debug.hideTools', () => filters.setToolsShown(false)));
+		this._register(vscode.commands.registerCommand('swe.agent.chat.debug.showNesRequests', () => filters.setNesRequestsShown(true)));
+		this._register(vscode.commands.registerCommand('swe.agent.chat.debug.hideNesRequests', () => filters.setNesRequestsShown(false)));
 	}
 }

@@ -41,6 +41,17 @@ import { registerNewWorkspaceIntentCommand } from './newWorkspaceFollowup';
 import { generateTerminalFixes, setLastCommandMatchResult } from './terminalFixGenerator';
 
 /**
+ * Global (module-level) guard to ensure we only ever attempt to register one
+ * AI text search provider for the 'file' scheme. Multiple instances of
+ * ConversationFeature can be constructed during hot reload / reactivation
+ * sequences which previously resulted in an unhandled exception:
+ *   Error: an AI text search provider for the scheme 'file' is already registered
+ * We keep the first registration alive for the lifetime of the extension host
+ * and silently ignore later attempts.
+ */
+let globalAITextSearchProviderRegistered = false;
+
+/**
  * Class that checks if users are allowed to use the conversation feature,
  * and registers the relevant providers if they are.
  */
@@ -116,7 +127,7 @@ export class ConversationFeature implements IExtensionContribution {
 		this._enabled = value;
 
 		// Set context value that is used to show/hide th sidebar icon
-		vscode.commands.executeCommand('setContext', 'github.copilot.interactiveSession.disabled', !value);
+		vscode.commands.executeCommand('setContext', 'swe.agent.interactiveSession.disabled', !value);
 	}
 
 	get activated() {
@@ -155,11 +166,25 @@ export class ConversationFeature implements IExtensionContribution {
 	}
 
 	private registerSearchProvider(): IDisposable | undefined {
-		if (this._searchProviderRegistered) {
+		if (this._searchProviderRegistered || globalAITextSearchProviderRegistered) {
+			// Another instance already registered the provider – noop
+			this.logService.debug('ConversationFeature: AI text search provider already registered, skipping');
 			return;
-		} else {
+		}
+		try {
+			const disposable = vscode.workspace.registerAITextSearchProvider('file', this.instantiationService.createInstance(SemanticSearchTextSearchProvider));
 			this._searchProviderRegistered = true;
-			return vscode.workspace.registerAITextSearchProvider('file', this.instantiationService.createInstance(SemanticSearchTextSearchProvider));
+			globalAITextSearchProviderRegistered = true;
+			return disposable;
+		} catch (err: any) {
+			// Swallow duplicate registration errors to be defensive. Other errors are rethrown.
+			if (err && typeof err.message === 'string' && /already registered/i.test(err.message)) {
+				this.logService.warn('ConversationFeature: Duplicate AI text search provider registration attempt ignored');
+				this._searchProviderRegistered = true; // prevent future attempts
+				globalAITextSearchProviderRegistered = true;
+				return; // Treat as successfully registered elsewhere
+			}
+			throw err;
 		}
 	}
 
@@ -206,12 +231,12 @@ export class ConversationFeature implements IExtensionContribution {
 		const disposables = new DisposableStore();
 
 		[
-			vscode.commands.registerCommand('github.copilot.interactiveSession.feedback', async () => {
+			vscode.commands.registerCommand('swe.agent.interactiveSession.feedback', async () => {
 				return vscode.env.openExternal(vscode.Uri.parse(FEEDBACK_URL));
 			}),
-			vscode.commands.registerCommand('github.copilot.terminal.explainTerminalLastCommand', async () => this.triggerTerminalChat({ query: `/${TerminalExplainIntent.intentName} #terminalLastCommand` })),
-			vscode.commands.registerCommand('github.copilot.terminal.fixTerminalLastCommand', async () => generateTerminalFixes(this.instantiationService)),
-			vscode.commands.registerCommand('github.copilot.terminal.generateCommitMessage', async () => {
+			vscode.commands.registerCommand('swe.agent.terminal.explainTerminalLastCommand', async () => this.triggerTerminalChat({ query: `/${TerminalExplainIntent.intentName} #terminalLastCommand` })),
+			vscode.commands.registerCommand('swe.agent.terminal.fixTerminalLastCommand', async () => generateTerminalFixes(this.instantiationService)),
+			vscode.commands.registerCommand('swe.agent.terminal.generateCommitMessage', async () => {
 				const workspaceFolders = vscode.workspace.workspaceFolders;
 
 				if (!workspaceFolders?.length) {
@@ -235,7 +260,7 @@ export class ConversationFeature implements IExtensionContribution {
 					vscode.window.activeTerminal?.sendText(message, false);
 				}
 			}),
-			vscode.commands.registerCommand('github.copilot.git.generateCommitMessage', async (rootUri: vscode.Uri | undefined, _: vscode.SourceControlInputBoxValueProviderContext[], cancellationToken: vscode.CancellationToken | undefined) => {
+			vscode.commands.registerCommand('swe.agent.git.generateCommitMessage', async (rootUri: vscode.Uri | undefined, _: vscode.SourceControlInputBoxValueProviderContext[], cancellationToken: vscode.CancellationToken | undefined) => {
 				const repository = this.gitCommitMessageService.getRepository(rootUri);
 				if (!repository) {
 					return;
@@ -246,10 +271,10 @@ export class ConversationFeature implements IExtensionContribution {
 					repository.inputBox.value = commitMessage;
 				}
 			}),
-			vscode.commands.registerCommand('github.copilot.devcontainer.generateDevContainerConfig', async (args: DevContainerConfigGeneratorArguments, cancellationToken = new vscode.CancellationTokenSource().token) => {
+			vscode.commands.registerCommand('swe.agent.devcontainer.generateDevContainerConfig', async (args: DevContainerConfigGeneratorArguments, cancellationToken = new vscode.CancellationTokenSource().token) => {
 				return this.devContainerConfigurationService.generateConfiguration(args, cancellationToken);
 			}),
-			vscode.commands.registerCommand('github.copilot.chat.openUserPreferences', async () => {
+			vscode.commands.registerCommand('swe.agent.chat.openUserPreferences', async () => {
 				const uri = URI.joinPath(this.extensionContext.globalStorageUri, 'copilotUserPreferences.md');
 				return vscode.commands.executeCommand('vscode.open', uri);
 			}),
@@ -320,7 +345,7 @@ export class ConversationFeature implements IExtensionContribution {
 	private registerTerminalQuickFixProviders() {
 		const isEnabled = () => this.enabled;
 		return combinedDisposable(
-			vscode.window.registerTerminalQuickFixProvider('copilot-chat.fixWithCopilot', {
+			vscode.window.registerTerminalQuickFixProvider('agent-chat.fixWithCopilot', {
 				provideTerminalQuickFixes(commandMatchResult, token) {
 					if (!isEnabled() || commandMatchResult.commandLine.endsWith('^C')) {
 						return [];
@@ -328,20 +353,20 @@ export class ConversationFeature implements IExtensionContribution {
 					setLastCommandMatchResult(commandMatchResult);
 					return [
 						{
-							command: 'github.copilot.terminal.fixTerminalLastCommand',
+							command: 'swe.agent.terminal.fixTerminalLastCommand',
 							title: vscode.l10n.t('Fix using Copilot')
 						},
 						{
-							command: 'github.copilot.terminal.explainTerminalLastCommand',
+							command: 'swe.agent.terminal.explainTerminalLastCommand',
 							title: vscode.l10n.t('Explain using Copilot')
 						}
 					];
 				}
 			}),
-			vscode.window.registerTerminalQuickFixProvider('copilot-chat.generateCommitMessage', {
+			vscode.window.registerTerminalQuickFixProvider('agent-chat.generateCommitMessage', {
 				provideTerminalQuickFixes: (commandMatchResult, token) => {
 					return this.enabled ? [{
-						command: 'github.copilot.terminal.generateCommitMessage',
+						command: 'swe.agent.terminal.generateCommitMessage',
 						title: vscode.l10n.t('Generate Commit Message')
 					}] : [];
 				},
@@ -351,7 +376,7 @@ export class ConversationFeature implements IExtensionContribution {
 }
 
 function registerSearchIntentCommand(): IDisposable {
-	return vscode.commands.registerCommand('github.copilot.executeSearch', async (arg: FindInFilesArgs) => {
+	return vscode.commands.registerCommand('swe.agent.executeSearch', async (arg: FindInFilesArgs) => {
 		const show = arg.filesToExclude.length > 0 || arg.filesToInclude.length > 0;
 		vscode.commands.executeCommand('workbench.view.search.focus').then(() =>
 			vscode.commands.executeCommand('workbench.action.search.toggleQueryDetails', { show })

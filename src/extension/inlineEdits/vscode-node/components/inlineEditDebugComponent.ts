@@ -17,8 +17,8 @@ import { XtabProvider } from '../../../xtab/node/xtabProvider';
 import { defaultNextEditProviderId } from '../../node/createNextEditProvider';
 import { DebugRecorder } from '../../node/debugRecorder';
 
-export const reportFeedbackCommandId = 'github.copilot.debug.inlineEdit.reportFeedback';
-const pickProviderId = 'github.copilot.debug.inlineEdit.pickProvider';
+export const reportFeedbackCommandId = 'swe.agent.debug.inlineEdit.reportFeedback';
+const pickProviderId = 'swe.agent.debug.inlineEdit.pickProvider';
 
 export type InlineCompletionCommand = { command: Command; icon: ThemeIcon };
 
@@ -96,10 +96,10 @@ export class InlineEditDebugComponent extends Disposable {
 
 			this._inlineEditsProviderId.set(selectedProvider, undefined);
 
-			const pick = await window.showWarningMessage(`Inline edits provider set to ${selectedProvider}. Reloading will undo this change. Set "github.copilot.${ConfigKey.Internal.InlineEditsProviderId.id}": "${selectedProvider}" in your settings file to make the change persistent.`, 'Open settings (JSON)');
+			const pick = await window.showWarningMessage(`Inline edits provider set to ${selectedProvider}. Reloading will undo this change. Set "swe.agent.${ConfigKey.Internal.InlineEditsProviderId.id}": "${selectedProvider}" in your settings file to make the change persistent.`, 'Open settings (JSON)');
 			if (!pick) { return; }
 
-			await commands.executeCommand('workbench.action.openSettingsJson', { revealSetting: { key: `github.copilot.${ConfigKey.Internal.InlineEditsProviderId.id}`, edit: true } });
+			await commands.executeCommand('workbench.action.openSettingsJson', { revealSetting: { key: `swe.agent.${ConfigKey.Internal.InlineEditsProviderId.id}`, edit: true } });
 		}));
 	}
 

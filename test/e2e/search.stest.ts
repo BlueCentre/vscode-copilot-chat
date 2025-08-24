@@ -224,7 +224,7 @@ function createSimplifiedSearchArgs(args: ISearchArg): ISimplifiedSearchArg {
 
 async function testArgs(commands: Command[]): Promise<ISearchArg> {
 	for (const c of commands) {
-		if (c.command === 'github.copilot.executeSearch') {
+		if (c.command === 'swe.agent.executeSearch') {
 			assert(c.title === "Search");
 			return c.arguments?.[0];
 		}

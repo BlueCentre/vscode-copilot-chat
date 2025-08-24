@@ -37,7 +37,7 @@ describe('DocumentFilter', () => {
 		expect(isEnabled).toBe(true);
 	});
 
-	it('can react to copilot.enable config changes for off-by-default language id', async () => {
+	it('can react to agent.enable config changes for off-by-default language id', async () => {
 		const defaultsConfigService = new DefaultsOnlyConfigurationService();
 		const defaultConfig = defaultsConfigService.getConfig(ConfigKey.Shared.Enable);
 		const configService = new InMemoryConfigurationService(defaultsConfigService);
@@ -56,7 +56,7 @@ describe('DocumentFilter', () => {
 		expect(isEnabled1).toBe(true);
 	});
 
-	it('can react to copilot.enable config changes for javascript', async () => {
+	it('can react to agent.enable config changes for javascript', async () => {
 		const defaultsConfigService = new DefaultsOnlyConfigurationService();
 		const defaultConfig = defaultsConfigService.getConfig(ConfigKey.Shared.Enable);
 		const configService = new InMemoryConfigurationService(defaultsConfigService, new Map(

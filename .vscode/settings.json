@@ -136,7 +136,7 @@
 		"scoredEdits.w.json": "https://microsoft.github.io/vscode-workbench-recorder-viewer/?editRating",
 		"workspaceRecording.jsonl": "https://microsoft.github.io/vscode-workbench-recorder-viewer/?jsonl=true",
 	},
-	"github.copilot.chat.generateTests.codeLens": true,
+	"swe.agent.chat.generateTests.codeLens": true,
 	"explorer.fileNesting.patterns": {
 		"vscode.d.ts": "vscode.proposed.*.ts",
 	},
@@ -147,5 +147,10 @@
 		"eslint": "warning"
 	},
 	"githubPullRequests.codingAgent.enabled": true,
-	"githubPullRequests.codingAgent.uiIntegration": true
+	"githubPullRequests.codingAgent.uiIntegration": true,
+	"debug.javascript.defaultRuntimeExecutable": {
+		"pwa-node": "/Users/james/.local/share/mise/shims/node"
+	},
+	"java.jdt.ls.java.home": "/Users/james/.local/share/mise/installs/java/21.0.2",
+	"java.import.gradle.java.home": "/Users/james/.local/share/mise/installs/java/21.0.2"
 }

@@ -237,7 +237,7 @@ ssuite({ title: 'settingsEditorSearchResultsSelector', location: 'external' }, (
 		const selector = instantiationService.createInstance(SettingsEditorSearchResultsSelector);
 		const settingsList: SettingListItem[] = [
 			{
-				"key": "github.copilot.chat.codesearch.enabled",
+				"key": "swe.agent.chat.codesearch.enabled",
 				"type": "boolean",
 				"markdownDescription": "Whether to enable agentic codesearch when using `#codebase`."
 			},
@@ -247,7 +247,7 @@ ssuite({ title: 'settingsEditorSearchResultsSelector', location: 'external' }, (
 				"description": "Enable agent mode for Copilot Chat. When this is enabled, a dropdown appears in the view to toggle agent mode."
 			},
 			{
-				"key": "github.copilot.chat.agent.runTasks",
+				"key": "swe.agent.chat.agent.runTasks",
 				"type": "boolean",
 				"description": "Configures whether Copilot Edits can run workspace tasks in agent mode."
 			},
@@ -257,11 +257,11 @@ ssuite({ title: 'settingsEditorSearchResultsSelector', location: 'external' }, (
 				"description": "Enables integration with Model Context Protocol servers to provide additional tools and functionality."
 			},
 			{
-				"key": "github.copilot.advanced",
+				"key": "swe.agent.advanced",
 				"type": "object"
 			},
 			{
-				"key": "github.copilot.chat.newWorkspaceCreation.enabled",
+				"key": "swe.agent.chat.newWorkspaceCreation.enabled",
 				"type": "boolean",
 				"description": "Whether to enable new agentic workspace creation."
 			},
@@ -306,7 +306,7 @@ ssuite({ title: 'settingsEditorSearchResultsSelector', location: 'external' }, (
 				"description": "Controls whether the command palette should include similar commands. You must have an extension installed that provides Natural Language support."
 			},
 			{
-				"key": "github.copilot.chat.completionContext.typescript.mode",
+				"key": "swe.agent.chat.completionContext.typescript.mode",
 				"type": "string",
 				"markdownDescription": "The execution mode of the TypeScript Copilot context provider.",
 				"enum": [
@@ -321,7 +321,7 @@ ssuite({ title: 'settingsEditorSearchResultsSelector', location: 'external' }, (
 				"description": "Controls whether tool use should be automatically approved."
 			},
 			{
-				"key": "github.copilot.chat.agent.thinkingTool",
+				"key": "swe.agent.chat.agent.thinkingTool",
 				"type": "boolean",
 				"markdownDescription": "Enables the thinking tool that allows Copilot to think deeply about your request before generating a response in agent mode."
 			},

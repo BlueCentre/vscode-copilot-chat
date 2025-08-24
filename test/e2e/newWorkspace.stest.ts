@@ -33,7 +33,7 @@ import { generateScenarioTestRunner } from './scenarioTest';
 					async (accessor, question, answer, _rawResponse, _index, _turn, commands) => {
 						const files: IQualifiedFile[] = [];
 						for (const command of commands) {
-							if (command.command === 'github.copilot.createProject') {
+							if (command.command === 'swe.agent.createProject') {
 								// validate project structure and contents in files
 								const projectItems: ChatResponseFileTreePart = command.arguments?.[0];
 								if (!projectItems || projectItems.value?.length === 0) {

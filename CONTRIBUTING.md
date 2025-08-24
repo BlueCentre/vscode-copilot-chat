@@ -1,4 +1,4 @@
-# Contributing to GitHub Copilot Chat
+# Contributing to SWE Agent Chat
 
 * [Creating good issues](#creating-good-issues)
   * [Look For an Existing Issue](#look-for-an-existing-issue)
@@ -195,7 +195,7 @@ For comprehensive information about the project architecture, coding standards, 
 * **Key Entry Points**: Where to make changes for specific features
 * **Development Guidelines**: Best practices for contributing to the codebase
 
-Understanding these guidelines is crucial for making effective contributions to the GitHub Copilot Chat extension.
+Understanding these guidelines is crucial for making effective contributions to the SWE Agent Chat extension.
 
 ### Layers
 
@@ -389,17 +389,17 @@ You can run the extension from Code OSS Desktop, provided that you follow along 
             "workflow"
          ]
       ],
-      "entitlementUrl": "https://api.github.com/copilot_internal/user",
-      "entitlementSignupLimitedUrl": "https://api.github.com/copilot_internal/subscribe_limited_user",
-      "chatQuotaExceededContext": "github.copilot.chat.quotaExceeded",
-      "completionsQuotaExceededContext": "github.copilot.completions.quotaExceeded",
-      "walkthroughCommand": "github.copilot.open.walkthrough",
-      "completionsMenuCommand": "github.copilot.toggleStatusMenu",
-      "completionsRefreshTokenCommand": "github.copilot.signIn",
-      "chatRefreshTokenCommand": "github.copilot.refreshToken",
-      "completionsAdvancedSetting": "github.copilot.advanced",
-      "completionsEnablementSetting": "github.copilot.enable",
-      "nextEditSuggestionsSetting": "github.copilot.nextEditSuggestions.enabled"
+      "entitlementUrl": "https://api.github.com/agent_internal/user",
+      "entitlementSignupLimitedUrl": "https://api.github.com/agent_internal/subscribe_limited_user",
+      "chatQuotaExceededContext": "swe.agent.chat.quotaExceeded",
+      "completionsQuotaExceededContext": "swe.agent.completions.quotaExceeded",
+      "walkthroughCommand": "swe.agent.open.walkthrough",
+      "completionsMenuCommand": "swe.agent.toggleStatusMenu",
+      "completionsRefreshTokenCommand": "swe.agent.signIn",
+      "chatRefreshTokenCommand": "swe.agent.refreshToken",
+      "completionsAdvancedSetting": "swe.agent.advanced",
+      "completionsEnablementSetting": "swe.agent.enable",
+      "nextEditSuggestionsSetting": "swe.agent.nextEditSuggestions.enabled"
    }
 }
 ```
@@ -469,17 +469,17 @@ Object.assign(product, {
 					'workflow'
 				]
 			],
-			'entitlementUrl': 'https://api.github.com/copilot_internal/user',
-			'entitlementSignupLimitedUrl': 'https://api.github.com/copilot_internal/subscribe_limited_user',
-			'chatQuotaExceededContext': 'github.copilot.chat.quotaExceeded',
-			'completionsQuotaExceededContext': 'github.copilot.completions.quotaExceeded',
-			'walkthroughCommand': 'github.copilot.open.walkthrough',
-			'completionsMenuCommand': 'github.copilot.toggleStatusMenu',
-			'completionsRefreshTokenCommand': 'github.copilot.signIn',
-			'chatRefreshTokenCommand': 'github.copilot.refreshToken',
-			'completionsAdvancedSetting': 'github.copilot.advanced',
-			'completionsEnablementSetting': 'github.copilot.enable',
-			'nextEditSuggestionsSetting': 'github.copilot.nextEditSuggestions.enabled'
+			'entitlementUrl': 'https://api.github.com/agent_internal/user',
+			'entitlementSignupLimitedUrl': 'https://api.github.com/agent_internal/subscribe_limited_user',
+			'chatQuotaExceededContext': 'swe.agent.chat.quotaExceeded',
+			'completionsQuotaExceededContext': 'swe.agent.completions.quotaExceeded',
+			'walkthroughCommand': 'swe.agent.open.walkthrough',
+			'completionsMenuCommand': 'swe.agent.toggleStatusMenu',
+			'completionsRefreshTokenCommand': 'swe.agent.signIn',
+			'chatRefreshTokenCommand': 'swe.agent.refreshToken',
+			'completionsAdvancedSetting': 'swe.agent.advanced',
+			'completionsEnablementSetting': 'swe.agent.enable',
+			'nextEditSuggestionsSetting': 'swe.agent.nextEditSuggestions.enabled'
 		}
 	});
 }

@@ -30,7 +30,7 @@
           "origin"
         ],
         "remoteFetchUrls": [
-          "git@github.com:microsoft/vscode-copilot.git"
+          "git@github.com:microsoft/vscode-agent.git"
         ],
         "changes": {
           "mergeChanges": [],
