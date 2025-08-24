@@ -10,7 +10,7 @@ export let outputChannel: OutputChannel;
 
 export class NewOutputChannelLogTarget implements ILogTarget {
 
-	private readonly _outputChannel = window.createOutputChannel('GitHub Copilot Chat', { log: true });
+	private readonly _outputChannel = window.createOutputChannel('SWE Agent Chat', { log: true });
 
 	constructor(extensionContext: ExtensionContext) {
 		outputChannel = this._outputChannel;

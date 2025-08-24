@@ -15,7 +15,7 @@ First, consider whether a new built-in tool is needed. Tools should be built-in 
 ### Static part
 
 First, add an entry in vscode-copilot's package.json under `contributes.languageModelTools`:
-- Give it a name that starts with `copilot_`- this pattern is protected for our use only
+- Give it a name that starts with `agent_`- this pattern is protected for our use only
 - Give it a reasonable `toolReferenceName` and a localized `userDescription`.
   - `toolReferenceName` is the name used in the tool picker, and to reference the tool with `#`, and to add the tool to a mode or toolset.
   - Consider whether the tool should be available on its own or part of a toolset. Add it to a toolset in `contributes.languageModelToolSets` if needed.

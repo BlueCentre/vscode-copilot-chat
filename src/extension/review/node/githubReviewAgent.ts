@@ -268,8 +268,8 @@ function parseLine(line: string): ResponseReference[] {
 
 	const parsedLine = JSON.parse(line.replace('data: ', ''));
 
-	if (Array.isArray(parsedLine.copilot_references) && parsedLine.copilot_references.length > 0) {
-		return parsedLine.copilot_references.filter((ref: any) => ref.type) as ResponseReference[];
+	if (Array.isArray(parsedLine.agent_references) && parsedLine.agent_references.length > 0) {
+		return parsedLine.agent_references.filter((ref: any) => ref.type) as ResponseReference[];
 	} else {
 		return [];
 	}
@@ -283,7 +283,7 @@ async function fetchComments(logService: ILogService, authService: IAuthenticati
 			role: 'user',
 			// This is the minimum reference required to get the agent to generate comments.
 			// NOTE: The shape of these references is under active development and is likely to change.
-			copilot_references: [
+			agent_references: [
 				{
 					type: 'github.pull_request',
 					id: '1',

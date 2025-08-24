@@ -100,13 +100,13 @@ export type CAPIChatMessage = OpenAI.ChatMessage & {
 	/**
 	 * CAPI references used in this message.
 	 */
-	copilot_references?: ICopilotReference[];
+	agent_references?: ICopilotReference[];
 	/**
 	 * CAPI confirmations used in this message.
 	 */
-	copilot_confirmations?: { state: string; confirmation: any }[];
+	agent_confirmations?: { state: string; confirmation: any }[];
 
-	copilot_cache_control?: {
+	agent_cache_control?: {
 		'type': 'ephemeral';
 	};
 } & ThinkingDataInMessage;
@@ -127,8 +127,8 @@ export type RawMessageConversionCallback = (message: CAPIChatMessage, thinkingDa
 /**
  * Converts a raw TSX chat message to CAPI's format.
  *
- * **Extra:** the raw message can have `copilot_references` and
- * `copilot_confirmations` properties, which are copied to the CAPI message.
+ * **Extra:** the raw message can have `agent_references` and
+ * `agent_confirmations` properties, which are copied to the CAPI message.
  */
 export function rawMessageToCAPI(message: Raw.ChatMessage, callback?: RawMessageConversionCallback): CAPIChatMessage;
 export function rawMessageToCAPI(message: Raw.ChatMessage[], callback?: RawMessageConversionCallback): CAPIChatMessage[];
@@ -138,11 +138,11 @@ export function rawMessageToCAPI(message: Raw.ChatMessage[] | Raw.ChatMessage, c
 	}
 
 	const out: CAPIChatMessage = toMode(OutputMode.OpenAI, message);
-	if ('copilot_references' in message) {
-		out.copilot_references = (message as any).copilot_references;
+	if ('agent_references' in message) {
+		out.agent_references = (message as any).agent_references;
 	}
-	if ('copilot_confirmations' in message) {
-		out.copilot_confirmations = (message as any).copilot_confirmations;
+	if ('agent_confirmations' in message) {
+		out.agent_confirmations = (message as any).agent_confirmations;
 	}
 	if (typeof out.content === 'string') {
 		out.content = out.content.trimEnd();
@@ -155,7 +155,7 @@ export function rawMessageToCAPI(message: Raw.ChatMessage[] | Raw.ChatMessage, c
 	}
 
 	if (message.content.find(part => part.type === ChatCompletionContentPartKind.CacheBreakpoint)) {
-		out.copilot_cache_control = { type: 'ephemeral' };
+		out.agent_cache_control = { type: 'ephemeral' };
 	}
 
 	for (const content of message.content) {

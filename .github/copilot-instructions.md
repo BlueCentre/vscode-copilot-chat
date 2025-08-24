@@ -1,8 +1,8 @@
-# GitHub Copilot Chat Extension - Copilot Instructions
+# SWE Agent Chat Extension - Copilot Instructions
 
 ## Project Overview
 
-This is the **GitHub Copilot Chat** extension for Visual Studio Code - a VS Code extension that provides conversational AI assistance, a coding agent with many tools, inline editing capabilities, and advanced AI-powered features for VS Code.
+This is the **SWE Agent Chat** extension for Visual Studio Code - a VS Code extension that provides conversational AI assistance, a coding agent with many tools, inline editing capabilities, and advanced AI-powered features for VS Code.
 
 ### Key Features
 - **Chat Interface**: Conversational AI assistance with chat participants, variables, and slash commands
@@ -77,10 +77,10 @@ This is the **GitHub Copilot Chat** extension for Visual Studio Code - a VS Code
 - **`byok/`**: Bring Your Own Key (BYOK) functionality for custom API keys
 
 **AI Integration & Endpoints:**
-- **`endpoint/`**: AI service endpoints and model selection
 - **`tools/`**: Language model tools and integrations
 - **`api/`**: Core API abstractions and interfaces
 - **`mcp/`**: Model Context Protocol integration
+
 
 **Development & Testing:**
 - **`testing/`**: Test generation and execution features
@@ -112,7 +112,8 @@ This is the **GitHub Copilot Chat** extension for Visual Studio Code - a VS Code
 #### `src/platform/` - Platform Services
 - **`chat/`**: Core chat services and conversation options
 - **`openai/`**: OpenAI API protocol integration and request handling
-- **`embedding/`**: Vector embeddings for semantic search
+- **`embeddings/`**: Vector embeddings for semantic search
+- **`endpoint/`**: AI service endpoints and model selection
 - **`parser/`**: Code parsing and AST analysis
 - **`search/`**: Workspace search and indexing
 - **`telemetry/`**: Analytics and usage tracking

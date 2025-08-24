@@ -60,7 +60,7 @@ export interface IRankResult {
 export class SemanticSearchTextSearchProvider implements vscode.AITextSearchProvider {
 	private _endpoint: IChatEndpoint | undefined = undefined;
 	public readonly name: string = 'Copilot';
-	public static feedBackSentKey = 'github.copilot.search.feedback.sent';
+	public static feedBackSentKey = 'swe.agent.search.feedback.sent';
 	public static latestQuery: string | undefined = undefined;
 	public static feedBackTelemetry: Partial<ISearchFeedbackTelemetry> = {};
 
@@ -264,7 +264,7 @@ export class SemanticSearchTextSearchProvider implements vscode.AITextSearchProv
 			await this.reportSearchResults(rankingResults, combinedChunks, progress, token);
 
 			/* __GDPR__
-			"copilot.search.request" : {
+			"agent.search.request" : {
 				"owner": "osortega",
 				"comment": "Copilot search request.",
 				"chunkCount": { "classification": "SystemMetaData", "purpose": "FeatureInsight", "isMeasurement": true, "comment": "Count of copilot search code chunks." },
@@ -281,7 +281,7 @@ export class SemanticSearchTextSearchProvider implements vscode.AITextSearchProv
 				"strategy": { "classification": "SystemMetaData", "purpose": "FeatureInsight", "comment": "Indicates the strategy used for the search." }
 				}
 			*/
-			this._telemetryService.sendMSFTTelemetryEvent('copilot.search.request', {
+			this._telemetryService.sendMSFTTelemetryEvent('agent.search.request', {
 				rankResult: SemanticSearchTextSearchProvider.feedBackTelemetry.rankResult,
 				parseResult: SemanticSearchTextSearchProvider.feedBackTelemetry.parseResult,
 				strategy: SemanticSearchTextSearchProvider.feedBackTelemetry.strategy,
@@ -497,7 +497,7 @@ export class SemanticSearchTextSearchProvider implements vscode.AITextSearchProv
 				});
 
 			/* __GDPR__
-		"copilot.search.keywords" : {
+		"agent.search.keywords" : {
 			"owner": "osortega",
 			"comment": "Copilot keywords request.",
 			"keywordResult": { "classification": "SystemMetaData", "purpose": "FeatureInsight", "comment": "Result of the copilot keywords request." },
@@ -505,7 +505,7 @@ export class SemanticSearchTextSearchProvider implements vscode.AITextSearchProv
 			"keywordSearchDuration": { "classification": "SystemMetaData", "purpose": "PerformanceAndHealth", "isMeasurement": true, "comment": "Duration of the keyword search" }
 			}
 		*/
-			this._telemetryService.sendMSFTTelemetryEvent('copilot.search.keywords', {
+			this._telemetryService.sendMSFTTelemetryEvent('agent.search.keywords', {
 				keywordResult: fetchResult.type,
 			}, {
 				keywordsCount: usedResults.length,

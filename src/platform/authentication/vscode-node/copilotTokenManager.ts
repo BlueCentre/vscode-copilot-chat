@@ -58,9 +58,18 @@ export class VSCodeCopilotTokenManager extends BaseCopilotTokenManager {
 	}
 
 	private async _auth(): Promise<TokenInfoOrError> {
-		const session = await getAnyAuthSession(this.configurationService, { silent: true });
+		let session = await getAnyAuthSession(this.configurationService, { silent: true });
 		if (!session) {
-			this._logService.warn('GitHub login failed');
+			// Attempt an interactive fallback so that fresh Extension Development Hosts prompt the user.
+			this._logService.info('GitHub silent auth session not found; attempting interactive sign-in.');
+			try {
+				session = await getAnyAuthSession(this.configurationService, { createIfNone: true });
+			} catch (err) {
+				this._logService.warn(`Interactive GitHub auth attempt failed: ${err instanceof Error ? err.message : String(err)}`);
+			}
+		}
+		if (!session) {
+			this._logService.warn('GitHub login failed (no session after interactive attempt)');
 			this._telemetryService.sendGHTelemetryErrorEvent('auth.github_login_failed');
 			return { kind: 'failure', reason: 'GitHubLoginFailed' };
 		}

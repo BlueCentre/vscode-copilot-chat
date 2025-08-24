@@ -135,81 +135,81 @@ export class ConfigurationMigrationContribution implements IExtensionContributio
 }
 
 ConfigurationMigrationRegistry.registerConfigurationMigrations([{
-	key: 'github.copilot.chat.experimental.startDebugging.enabled',
+	key: 'swe.agent.chat.experimental.startDebugging.enabled',
 	migrateFn: async (value: any) => {
 		return [
-			['github.copilot.chat.startDebugging.enabled', { value }],
-			['github.copilot.chat.experimental.startDebugging.enabled', { value: undefined }]
+			['swe.agent.chat.startDebugging.enabled', { value }],
+			['swe.agent.chat.experimental.startDebugging.enabled', { value: undefined }]
 		];
 	}
 }]);
 
 ConfigurationMigrationRegistry.registerConfigurationMigrations([{
-	key: 'github.copilot.chat.experimental.setupTests.enabled',
+	key: 'swe.agent.chat.experimental.setupTests.enabled',
 	migrateFn: async (value: any) => {
 		return [
-			['github.copilot.chat.setupTests.enabled', { value }],
-			['github.copilot.chat.experimental.setupTests.enabled', { value: undefined }]
+			['swe.agent.chat.setupTests.enabled', { value }],
+			['swe.agent.chat.experimental.setupTests.enabled', { value: undefined }]
 		];
 	}
 }]);
 
 ConfigurationMigrationRegistry.registerConfigurationMigrations([{
-	key: 'github.copilot.chat.experimental.codeGeneration.instructions',
+	key: 'swe.agent.chat.experimental.codeGeneration.instructions',
 	migrateFn: async (value: any) => {
 		return [
-			['github.copilot.chat.codeGeneration.instructions', { value }],
-			['github.copilot.chat.experimental.codeGeneration.instructions', { value: undefined }]
+			['swe.agent.chat.codeGeneration.instructions', { value }],
+			['swe.agent.chat.experimental.codeGeneration.instructions', { value: undefined }]
 		];
 	}
 }]);
 
 ConfigurationMigrationRegistry.registerConfigurationMigrations([{
-	key: 'github.copilot.chat.experimental.codeGeneration.useInstructionFiles',
+	key: 'swe.agent.chat.experimental.codeGeneration.useInstructionFiles',
 	migrateFn: async (value: any) => {
 		return [
-			['github.copilot.chat.codeGeneration.useInstructionFiles', { value }],
-			['github.copilot.chat.experimental.codeGeneration.useInstructionFiles', { value: undefined }]
+			['swe.agent.chat.codeGeneration.useInstructionFiles', { value }],
+			['swe.agent.chat.experimental.codeGeneration.useInstructionFiles', { value: undefined }]
 		];
 	}
 }]);
 
 ConfigurationMigrationRegistry.registerConfigurationMigrations([{
-	key: 'github.copilot.chat.experimental.testGeneration.instructions',
+	key: 'swe.agent.chat.experimental.testGeneration.instructions',
 	migrateFn: async (value: any) => {
 		return [
-			['github.copilot.chat.testGeneration.instructions', { value }],
-			['github.copilot.chat.experimental.testGeneration.instructions', { value: undefined }]
+			['swe.agent.chat.testGeneration.instructions', { value }],
+			['swe.agent.chat.experimental.testGeneration.instructions', { value: undefined }]
 		];
 	}
 }]);
 
 ConfigurationMigrationRegistry.registerConfigurationMigrations([{
-	key: 'github.copilot.chat.experimental.generateTests.codeLens',
+	key: 'swe.agent.chat.experimental.generateTests.codeLens',
 	migrateFn: async (value: any) => {
 		return [
-			['github.copilot.chat.generateTests.codeLens', { value }],
-			['github.copilot.chat.experimental.generateTests.codeLens', { value: undefined }]
+			['swe.agent.chat.generateTests.codeLens', { value }],
+			['swe.agent.chat.experimental.generateTests.codeLens', { value: undefined }]
 		];
 	}
 }]);
 
 ConfigurationMigrationRegistry.registerConfigurationMigrations([{
-	key: 'github.copilot.chat.experimental.temporalContext.enabled',
+	key: 'swe.agent.chat.experimental.temporalContext.enabled',
 	migrateFn: async (value: any) => {
 		return [
-			['github.copilot.chat.editor.temporalContext.enabled', { value }],
-			['github.copilot.chat.experimental.temporalContext.enabled', { value: undefined }]
+			['swe.agent.chat.editor.temporalContext.enabled', { value }],
+			['swe.agent.chat.experimental.temporalContext.enabled', { value: undefined }]
 		];
 	}
 }]);
 
 ConfigurationMigrationRegistry.registerConfigurationMigrations([{
-	key: 'github.copilot.chat.temporalContext.enabled',
+	key: 'swe.agent.chat.temporalContext.enabled',
 	migrateFn: async (value: any) => {
 		return [
-			['github.copilot.chat.editor.temporalContext.enabled', { value }],
-			['github.copilot.chat.temporalContext.enabled', { value: undefined }]
+			['swe.agent.chat.editor.temporalContext.enabled', { value }],
+			['swe.agent.chat.temporalContext.enabled', { value: undefined }]
 		];
 	}
 }]);

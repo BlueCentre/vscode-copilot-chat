@@ -31,7 +31,7 @@ import { handleDebugSession } from './copilotDebugCommandSession';
 import powershellScript from '../node/copilotDebugWorker/copilotDebugWorker.ps1';
 
 // When enabled, holds the storage location of binaries for the PATH:
-const WAS_REGISTERED_STORAGE_KEY = 'copilot-chat.terminalToDebugging.registered';
+const WAS_REGISTERED_STORAGE_KEY = 'agent-chat.terminalToDebugging.registered';
 const PATH_VARIABLE = 'PATH';
 export const COPILOT_DEBUG_COMMAND = `copilot-debug`;
 const DEBUG_COMMAND_JS = 'copilotDebugCommand.js';
@@ -57,7 +57,7 @@ export class CopilotDebugCommandContribution extends Disposable implements vscod
 				this.registerSerializer = this.registerSerializer.then(() => this.registerEnvironment());
 			}
 		}));
-		this._register(vscode.commands.registerCommand('github.copilot.chat.startCopilotDebugCommand', async () => {
+		this._register(vscode.commands.registerCommand('swe.agent.chat.startCopilotDebugCommand', async () => {
 			const term = vscode.window.createTerminal();
 			term.show(false);
 			term.sendText('copilot-debug <your command here>', false);

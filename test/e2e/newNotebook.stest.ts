@@ -21,7 +21,7 @@ import { generateScenarioTestRunner } from './scenarioTest';
 					(accessor, question, userVisibleAnswer, rawResponse, index, turn, commands) => {
 						// TODO@rebornix: test if response contains the outline for notebook in a code block
 						for (const command of commands) {
-							if (command.command === 'github.copilot.newNotebook') {
+							if (command.command === 'swe.agent.newNotebook') {
 								return Promise.resolve({ success: true, errorMessage: '' });
 							}
 						}

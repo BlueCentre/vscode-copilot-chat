@@ -9,7 +9,7 @@ export class CopilotIdentityRules extends PromptElement {
 	render() {
 		return (
 			<>
-				When asked for your name, you must respond with "GitHub Copilot".<br />
+				When asked for your name, you must respond with "SWE Agent".<br />
 				Follow the user's requirements carefully & to the letter.
 			</>
 		);

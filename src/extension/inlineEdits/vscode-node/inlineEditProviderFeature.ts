@@ -80,7 +80,7 @@ export class InlineEditProviderFeature extends Disposable implements IExtensionC
 		const tracer = createTracer(['NES', 'Feature'], (s) => this._logService.trace(s));
 		const constructorTracer = tracer.sub('constructor');
 
-		const hasUpdatedNesSettingKey = 'copilot.chat.nextEdits.hasEnabledNesInSettings';
+		const hasUpdatedNesSettingKey = 'agent.chat.nextEdits.hasEnabledNesInSettings';
 		this._register(autorun((reader) => {
 			const copilotToken = this._copilotToken.read(reader);
 
@@ -177,9 +177,9 @@ export class InlineEditProviderFeature extends Disposable implements IExtensionC
 	}
 }
 
-export const learnMoreCommandId = 'github.copilot.debug.inlineEdit.learnMore';
+export const learnMoreCommandId = 'swe.agent.debug.inlineEdit.learnMore';
 
 export const learnMoreLink = 'https://aka.ms/vscode-nes';
 
-const clearCacheCommandId = 'github.copilot.debug.inlineEdit.clearCache';
-const reportNotebookNESIssueCommandId = 'github.copilot.debug.inlineEdit.reportNotebookNESIssue';
+const clearCacheCommandId = 'swe.agent.debug.inlineEdit.clearCache';
+const reportNotebookNESIssueCommandId = 'swe.agent.debug.inlineEdit.reportNotebookNESIssue';

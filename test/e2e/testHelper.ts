@@ -52,7 +52,7 @@ export async function parseQueryForScenarioTest(accessor: ITestingServicesAccess
 
 export function createWorkingSetFileVariable(uri: Uri) {
 	return {
-		id: 'copilot.file',
+		id: 'agent.file',
 		name: `file:${basename(uri)}`,
 		value: uri,
 	};
@@ -81,7 +81,7 @@ export function parseQueryForTest(accessor: ITestingServicesAccessor, query: str
 		if (varName === 'file') {
 			const value = parseFileVariables(simulationWorkspace, arg);
 			const varWithArg = `${varName}:${arg}`;
-			variables.push({ id: `copilot.${varName}`, name: varWithArg, range, value });
+			variables.push({ id: `agent.${varName}`, name: varWithArg, range, value });
 		} else {
 			const tool = toolsService.getToolByToolReferenceName(varName);
 			if (tool) {
