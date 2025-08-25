@@ -2,10 +2,10 @@
  *  Copyright (c) Microsoft Corporation and GitHub. All rights reserved.
  *--------------------------------------------------------------------------------------------*/
 
-import './media/chatSetup.css';
 import { $ } from '../../../../base/browser/dom.js';
 import { Dialog, DialogContentsAlignment } from '../../../../base/browser/ui/dialog/dialog.js';
 import { WorkbenchActionExecutedClassification, WorkbenchActionExecutedEvent } from '../../../../base/common/actions.js';
+import { coalesce } from '../../../../base/common/arrays.js';
 import { timeout } from '../../../../base/common/async.js';
 import { CancellationToken } from '../../../../base/common/cancellation.js';
 import { Codicon } from '../../../../base/common/codicons.js';
@@ -65,7 +65,7 @@ import { ILanguageModelsService } from '../common/languageModels.js';
 import { CHAT_CATEGORY, CHAT_OPEN_ACTION_ID, CHAT_SETUP_ACTION_ID } from './actions/chatActions.js';
 import { ChatViewId, IChatWidgetService, showCopilotView } from './chat.js';
 import { CHAT_SIDEBAR_PANEL_ID } from './chatViewPane.js';
-import { coalesce } from '../../../../base/common/arrays.js';
+import './media/chatSetup.css';
 
 const defaultChat = {
 	extensionId: product.defaultChatAgent?.extensionId ?? '',
@@ -477,7 +477,7 @@ class SetupAgent extends Disposable implements IChatAgentImplementation {
 			return requestModel;
 		}
 
-		const toolId = toolPart.toolId.replace(/setup.tools\./, `copilot_`.toLowerCase());
+		const toolId = toolPart.toolId.replace(/setup.tools\./, `agent_`.toLowerCase());
 		const newToolPart = new ChatRequestToolPart(
 			toolPart.range,
 			toolPart.editorRange,
@@ -1310,7 +1310,7 @@ class ChatSetupController extends Disposable {
 	async setupWithProvider(options: { useEnterpriseProvider: boolean }): Promise<boolean> {
 		const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration);
 		registry.registerConfiguration({
-			'id': 'copilot.setup',
+			'id': 'agent.setup',
 			'type': 'object',
 			'properties': {
 				[defaultChat.completionsAdvancedSetting]: {

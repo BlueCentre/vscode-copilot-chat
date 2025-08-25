@@ -2,6 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+import * as l10n from '@vscode/l10n';
 import * as vscode from 'vscode';
 import { IAuthenticationService } from '../../../platform/authentication/common/authentication';
 import { IChatAgentService, defaultAgentName, editingSessionAgent2Name, editingSessionAgentEditorName, editingSessionAgentName, editorAgentName, editsAgentName, getChatParticipantIdFromName, notebookEditorAgentName, terminalAgentName, vscodeAgentName, workspaceAgentName } from '../../../platform/chat/common/chatAgents';
@@ -50,11 +51,13 @@ export class ChatAgentService implements IChatAgentService {
 		};
 	}
 }
+// Provide alias for intent resolution
+type IntentOrGetter = Intent | ((request: vscode.ChatRequest) => Intent);
 
 class ChatAgents implements IDisposable {
 	private readonly _disposables = new DisposableStore();
-
 	private additionalWelcomeMessage: vscode.MarkdownString | undefined;
+	private readonly _createdAgents: vscode.ChatParticipant[] = [];
 
 	constructor(
 		@IOctoKitService private readonly octoKitService: IOctoKitService,
@@ -69,143 +72,98 @@ class ChatAgents implements IDisposable {
 		@IExperimentationService private readonly experimentationService: IExperimentationService,
 	) { }
 
-	dispose() {
+	dispose(): void {
+		for (const agent of this._createdAgents) {
+			try { (agent as any).dispose?.(); } catch { /* ignore */ }
+		}
 		this._disposables.dispose();
 	}
 
 	register(): void {
 		this.additionalWelcomeMessage = this.instantiationService.invokeFunction(getAdditionalWelcomeMessage);
-		this._disposables.add(this.registerDefaultAgent());
-		this._disposables.add(this.registerEditingAgent());
-		this._disposables.add(this.registerEditingAgent2());
-		this._disposables.add(this.registerEditingAgentEditor());
-		this._disposables.add(this.registerEditsAgent());
-		this._disposables.add(this.registerEditorDefaultAgent());
-		this._disposables.add(this.registerNotebookEditorDefaultAgent());
-		this._disposables.add(this.registerNotebookDefaultAgent());
-		this._disposables.add(this.registerWorkspaceAgent());
-		this._disposables.add(this.registerVSCodeAgent());
-		this._disposables.add(this.registerTerminalAgent());
-		this._disposables.add(this.registerTerminalPanelAgent());
+		this.registerDefaultAgent();
+		this.registerEditingAgent();
+		this.registerEditingAgent2();
+		this.registerEditingAgentEditor();
+		this.registerEditsAgent();
+		this.registerEditorDefaultAgent();
+		this.registerNotebookEditorDefaultAgent();
+		this.registerNotebookDefaultAgent();
+		this.registerWorkspaceAgent();
+		this.registerVSCodeAgent();
+		this.registerTerminalAgent();
+		this.registerTerminalPanelAgent();
+		this.personalizeWelcomeMessage();
+	}
+
+	private async personalizeWelcomeMessage() {
+		try {
+			const user = await this.octoKitService.getCurrentAuthedUser();
+			if (!user) { return; }
+			const firstName = (user.name ?? user.login).split(/\s+/)[0];
+			const encodePrompt = (prompt: string) => encodeURIComponent(JSON.stringify([prompt]));
+			const prompts: { title: string; prompt: string; detail: string }[] = [
+				{ title: 'Summarize this repository', prompt: 'Give me a concise summary of this repository structure, key technologies, and primary responsibilities of each top-level folder.', detail: 'High-level overview.' },
+				{ title: 'Explain the open file', prompt: 'Explain the currently active editor file focusing on exported functions, public APIs, and potential improvement opportunities.', detail: 'Understand a file.' },
+				{ title: 'Add tests for a function', prompt: 'Write unit tests for the main exported function in the active file. Use the existing test framework already configured in this repo.', detail: 'Increase coverage.' }
+			];
+			let mdValue = `### Hi, ${firstName}!\n`;
+			mdValue += `Signed in as **${user.login}**. Here are some quick starters:`;
+			mdValue += `\n\n` + prompts.map(p => `> **${p.title}**  \\\n+> ${p.detail}  \\\n+> [Try it](command:workbench.action.chat.open?${encodePrompt(p.prompt)})`).join('\n\n');
+			const personalized = new vscode.MarkdownString(mdValue);
+			personalized.isTrusted = { enabledCommands: ['workbench.action.chat.open'] };
+			for (const agent of this._createdAgents) {
+				(agent as any).additionalWelcomeMessage = personalized;
+			}
+		} catch { /* ignore */ }
 	}
 
 	private createAgent(name: string, defaultIntentIdOrGetter: IntentOrGetter, options?: { id?: string }): vscode.ChatParticipant {
 		const id = options?.id || getChatParticipantIdFromName(name);
 		const onRequestPaused = new Relay<vscode.ChatParticipantPauseStateEvent>();
 		const agent = vscode.chat.createChatParticipant(id, this.getChatParticipantHandler(id, name, defaultIntentIdOrGetter, onRequestPaused.event));
-		agent.onDidReceiveFeedback(e => {
-			this.userFeedbackService.handleFeedback(e, id);
-		});
-		agent.onDidPerformAction(e => {
-			this.userFeedbackService.handleUserAction(e, id);
-		});
-		if (agent.onDidChangePauseState) {
-			onRequestPaused.input = agent.onDidChangePauseState as Event<vscode.ChatParticipantPauseStateEvent>;
-		}
-		this._disposables.add(autorun(reader => {
-			agent.supportIssueReporting = this.feedbackReporter.canReport.read(reader);
-		}));
-
+		this._createdAgents.push(agent);
+		(agent as any).onDidReceiveFeedback?.((e: any) => this.userFeedbackService.handleFeedback(e, id));
+		(agent as any).onDidPerformAction?.((e: any) => this.userFeedbackService.handleUserAction(e, id));
+		if ((agent as any).onDidChangePauseState) { onRequestPaused.input = (agent as any).onDidChangePauseState; }
+		this._disposables.add(autorun(reader => { (agent as any).supportIssueReporting = this.feedbackReporter.canReport.read(reader); }));
 		return agent;
 	}
 
-	private registerWorkspaceAgent(): IDisposable {
-		const workspaceAgent = this.createAgent(workspaceAgentName, Intent.Workspace);
-
-		workspaceAgent.iconPath = new vscode.ThemeIcon('code');
-
-		return workspaceAgent;
-	}
-
-	private registerVSCodeAgent(): IDisposable {
-		const useInsidersIcon = vscode.env.appName.includes('Insiders') || vscode.env.appName.includes('OSS');
-		const vscodeAgent = this.createAgent(vscodeAgentName, Intent.VSCode);
-		vscodeAgent.iconPath = useInsidersIcon ? new vscode.ThemeIcon('vscode-insiders') : new vscode.ThemeIcon('vscode');
-		return vscodeAgent;
-	}
-
-	private registerTerminalAgent(): IDisposable {
-		const terminalAgent = this.createAgent(terminalAgentName, Intent.Terminal);
-
-		terminalAgent.iconPath = new vscode.ThemeIcon('terminal');
-		return terminalAgent;
-	}
-
-	private registerTerminalPanelAgent(): IDisposable {
-		const terminalPanelAgent = this.createAgent(terminalAgentName, Intent.Terminal, { id: 'github.copilot.terminalPanel' });
-
-		terminalPanelAgent.iconPath = new vscode.ThemeIcon('terminal');
-
-		return terminalPanelAgent;
-	}
-
 	private async initDefaultAgentRequestorProps(defaultAgent: vscode.ChatParticipant) {
-		const tryToSetRequestorProps = async () => {
+		const trySet = async () => {
 			const user = await this.octoKitService.getCurrentAuthedUser();
-			if (!user) {
-				return false;
-			}
-			defaultAgent.requester = {
-				name: user.login,
-				icon: URI.parse(user?.avatar_url ?? `https://avatars.githubusercontent.com/${user.login}`)
-			};
+			if (!user) { return false; }
+			(defaultAgent as any).requester = { name: user.login, icon: URI.parse(user?.avatar_url ?? `https://avatars.githubusercontent.com/${user.login}`) };
 			return true;
 		};
-
-		if (!(await tryToSetRequestorProps())) {
-			// Not logged in yet, wait for login
-			const listener = this.authenticationService.onDidAuthenticationChange(async () => {
-				if (await tryToSetRequestorProps()) {
-					listener.dispose();
-				}
-			});
+		if (!(await trySet())) {
+			const listener = this.authenticationService.onDidAuthenticationChange(async () => { if (await trySet()) { listener.dispose(); } });
 		}
 	}
 
-	private registerEditingAgent(): IDisposable {
-		const editingAgent = this.createAgent(editingSessionAgentName, Intent.Edit);
-		editingAgent.iconPath = new vscode.ThemeIcon('copilot');
-		editingAgent.additionalWelcomeMessage = this.additionalWelcomeMessage;
-		editingAgent.titleProvider = this.instantiationService.createInstance(ChatTitleProvider);
-		return editingAgent;
-	}
+	private registerWorkspaceAgent() { (this.createAgent(workspaceAgentName, Intent.Workspace) as any).iconPath = new vscode.ThemeIcon('code'); }
+	private registerVSCodeAgent() { const a = this.createAgent(vscodeAgentName, Intent.VSCode) as any; a.iconPath = vscode.env.appName.includes('Insiders') || vscode.env.appName.includes('OSS') ? new vscode.ThemeIcon('vscode-insiders') : new vscode.ThemeIcon('vscode'); }
+	private registerTerminalAgent() { (this.createAgent(terminalAgentName, Intent.Terminal) as any).iconPath = new vscode.ThemeIcon('terminal'); }
+	private registerTerminalPanelAgent() { (this.createAgent(terminalAgentName, Intent.Terminal, { id: 'swe.agent.terminalPanel' }) as any).iconPath = new vscode.ThemeIcon('terminal'); }
+	private registerEditingAgent() { const a = this.createAgent(editingSessionAgentName, Intent.Edit) as any; a.iconPath = new vscode.ThemeIcon('copilot'); a.additionalWelcomeMessage = this.additionalWelcomeMessage; a.titleProvider = this.instantiationService.createInstance(ChatTitleProvider); }
+	private registerEditingAgentEditor() { const a = this.createAgent(editingSessionAgentEditorName, Intent.Edit) as any; a.iconPath = new vscode.ThemeIcon('copilot'); a.additionalWelcomeMessage = this.additionalWelcomeMessage; }
+	private registerEditingAgent2() { const a = this.createAgent(editingSessionAgent2Name, Intent.Edit2) as any; a.iconPath = new vscode.ThemeIcon('copilot'); a.additionalWelcomeMessage = this.additionalWelcomeMessage; a.titleProvider = this.instantiationService.createInstance(ChatTitleProvider); }
+	private registerEditsAgent() { const a = this.createAgent(editsAgentName, Intent.Agent) as any; a.iconPath = new vscode.ThemeIcon('tools'); a.additionalWelcomeMessage = this.additionalWelcomeMessage; a.titleProvider = this.instantiationService.createInstance(ChatTitleProvider); }
+	private registerNotebookEditorDefaultAgent() { (this.createAgent('notebook', Intent.Editor) as any).iconPath = new vscode.ThemeIcon('copilot'); }
+	private registerNotebookDefaultAgent() { (this.createAgent(notebookEditorAgentName, Intent.notebookEditor) as any).iconPath = new vscode.ThemeIcon('copilot'); }
+	private registerEditorDefaultAgent() { (this.createAgent(editorAgentName, Intent.Editor) as any).iconPath = new vscode.ThemeIcon('copilot'); }
 
-	private registerEditingAgentEditor(): IDisposable {
-		const editingAgent = this.createAgent(editingSessionAgentEditorName, Intent.Edit);
-		editingAgent.iconPath = new vscode.ThemeIcon('copilot');
-		editingAgent.additionalWelcomeMessage = this.additionalWelcomeMessage;
-		return editingAgent;
-	}
-
-	private registerEditingAgent2(): IDisposable {
-		const editingAgent = this.createAgent(editingSessionAgent2Name, Intent.Edit2);
-		editingAgent.iconPath = new vscode.ThemeIcon('copilot');
-		editingAgent.additionalWelcomeMessage = this.additionalWelcomeMessage;
-		editingAgent.titleProvider = this.instantiationService.createInstance(ChatTitleProvider);
-		return editingAgent;
-	}
-
-	private registerEditsAgent(): IDisposable {
-		const editingAgent = this.createAgent(editsAgentName, Intent.Agent);
-		editingAgent.iconPath = new vscode.ThemeIcon('tools');
-		editingAgent.additionalWelcomeMessage = this.additionalWelcomeMessage;
-		editingAgent.titleProvider = this.instantiationService.createInstance(ChatTitleProvider);
-		return editingAgent;
-	}
-
-	private registerDefaultAgent(): IDisposable {
+	private registerDefaultAgent() {
 		const intentGetter = (request: vscode.ChatRequest) => {
-			if (this.configurationService.getExperimentBasedConfig(ConfigKey.Internal.AskAgent, this.experimentationService) && request.model.capabilities.supportsToolCalling && this.configurationService.getNonExtensionConfig('chat.agent.enabled')) {
-				return Intent.AskAgent;
-			}
+			const reqAny = request as any;
+			if (this.configurationService.getExperimentBasedConfig(ConfigKey.Internal.AskAgent, this.experimentationService) && reqAny.model?.capabilities?.supportsToolCalling && this.configurationService.getNonExtensionConfig('chat.agent.enabled')) { return Intent.AskAgent; }
 			return Intent.Unknown;
 		};
-		const defaultAgent = this.createAgent(defaultAgentName, intentGetter);
-		defaultAgent.iconPath = new vscode.ThemeIcon('copilot');
-		this.initDefaultAgentRequestorProps(defaultAgent);
-
-		defaultAgent.helpTextPrefix = vscode.l10n.t('You can ask me general programming questions, or chat with the following participants which have specialized expertise and can perform actions:');
-		const helpPostfix = vscode.l10n.t({
+		const a = this.createAgent(defaultAgentName, intentGetter) as any;
+		a.iconPath = new vscode.ThemeIcon('copilot');
+		this.initDefaultAgentRequestorProps(a);
+		const helpPostfix = l10n.t({
 			message: `To have a great conversation, ask me questions as if I was a real programmer:
 
 * **Show me the code** you want to talk about by having the files open and selecting the most important lines.
@@ -214,124 +172,57 @@ class ChatAgents implements IDisposable {
 
 You can also ask me questions about your editor selection by [starting an inline chat session](command:inlineChat.start).
 
-Learn more about [GitHub Copilot](https://docs.github.com/copilot/using-github-copilot/getting-started-with-github-copilot?tool=vscode&utm_source=editor&utm_medium=chat-panel&utm_campaign=2024q3-em-MSFT-getstarted) in [Visual Studio Code](https://code.visualstudio.com/docs/copilot/overview). Or explore the [Copilot walkthrough](command:github.copilot.open.walkthrough).`,
+Learn more about [GitHub Copilot](https://docs.github.com/copilot/using-github-copilot/getting-started-with-github-copilot?tool=vscode&utm_source=editor&utm_medium=chat-panel&utm_campaign=2024q3-em-MSFT-getstarted) in [Visual Studio Code](https://code.visualstudio.com/docs/copilot/overview). Or explore the [Copilot walkthrough](command:swe.agent.open.walkthrough).`,
 			comment: "{Locked='](command:inlineChat.start)'}"
 		});
-		const markdownString = new vscode.MarkdownString(helpPostfix);
-		markdownString.isTrusted = { enabledCommands: ['inlineChat.start', 'github.copilot.open.walkthrough'] };
-		defaultAgent.helpTextPostfix = markdownString;
-
-		defaultAgent.additionalWelcomeMessage = this.additionalWelcomeMessage;
-		defaultAgent.titleProvider = this.instantiationService.createInstance(ChatTitleProvider);
-		defaultAgent.summarizer = this.instantiationService.createInstance(ChatSummarizerProvider);
-
-		return defaultAgent;
-	}
-
-	private registerEditorDefaultAgent(): IDisposable {
-		const defaultAgent = this.createAgent(editorAgentName, Intent.Editor);
-		defaultAgent.iconPath = new vscode.ThemeIcon('copilot');
-
-		return defaultAgent;
-	}
-
-	private registerNotebookEditorDefaultAgent(): IDisposable {
-		const defaultAgent = this.createAgent('notebook', Intent.Editor);
-		defaultAgent.iconPath = new vscode.ThemeIcon('copilot');
-
-		return defaultAgent;
-	}
-
-	private registerNotebookDefaultAgent(): IDisposable {
-		const defaultAgent = this.createAgent(notebookEditorAgentName, Intent.notebookEditor);
-		defaultAgent.iconPath = new vscode.ThemeIcon('copilot');
-
-		return defaultAgent;
+		const md = new vscode.MarkdownString(helpPostfix); md.isTrusted = { enabledCommands: ['inlineChat.start', 'swe.agent.open.walkthrough'] }; a.helpTextPostfix = md;
+		a.additionalWelcomeMessage = this.additionalWelcomeMessage; a.titleProvider = this.instantiationService.createInstance(ChatTitleProvider); a.summarizer = this.instantiationService.createInstance(ChatSummarizerProvider);
 	}
 
 	private getChatParticipantHandler(id: string, name: string, defaultIntentIdOrGetter: IntentOrGetter, onRequestPaused: Event<vscode.ChatParticipantPauseStateEvent>): vscode.ChatExtendedRequestHandler {
 		return async (request, context, stream, token): Promise<vscode.ChatResult> => {
-
-			// If we need privacy confirmation, i.e with 3rd party models. We will return a confirmation response and return early
-			const privacyConfirmation = await this.requestPolicyConfirmation(request, stream);
-			if (typeof privacyConfirmation === 'boolean') {
-				return {};
-			}
-			request = privacyConfirmation;
-			// If we need to switch to the base model, this function will handle it
-			// Otherwise it just returns the same request passed into it
-			request = await this.switchToBaseModel(request, stream);
-			// The user is starting an interaction with the chat
+			const privacy = await this.requestPolicyConfirmation(request, stream);
+			if (privacy === true) { return {}; }
+			const chatRequest = privacy as vscode.ChatRequest;
+			const maybeSwitched = await this.switchToBaseModel(chatRequest, stream);
 			this.interactionService.startInteraction();
-
-			const defaultIntentId = typeof defaultIntentIdOrGetter === 'function' ?
-				defaultIntentIdOrGetter(request) :
-				defaultIntentIdOrGetter;
-
-			// empty chatAgentArgs will force InteractiveSession to not use a command or try to parse one out of the query
-			const commandsForAgent = agentsToCommands[defaultIntentId];
-			const intentId = request.command && commandsForAgent ?
-				commandsForAgent[request.command] :
-				defaultIntentId;
-
-			const onPause = Event.chain(onRequestPaused, $ => $.filter(e => e.request === request).map(e => e.isPaused));
-			const handler = this.instantiationService.createInstance(ChatParticipantRequestHandler, context.history, request, stream, token, { agentName: name, agentId: id, intentId }, onPause);
-			return await handler.getResult();
+			const defaultIntentId = typeof defaultIntentIdOrGetter === 'function' ? defaultIntentIdOrGetter(maybeSwitched) : defaultIntentIdOrGetter;
+			const commandsForAgent = (agentsToCommands as any)[defaultIntentId];
+			const reqAny = maybeSwitched as any;
+			const intentId = reqAny.command && commandsForAgent ? commandsForAgent[reqAny.command] : defaultIntentId;
+			const onPause = Event.chain(onRequestPaused, $ => $.filter(e => e.request === maybeSwitched).map(e => e.isPaused));
+			const handler = this.instantiationService.createInstance(ChatParticipantRequestHandler, context.history, maybeSwitched, stream, token, { agentName: name, agentId: id, intentId }, onPause);
+			return handler.getResult();
 		};
 	}
 
-	/**
-	 * Handles showing the privacy confirmation in cases such as 3rd party models
-	 * @param request The current chat request
-	 * @param stream The chat response stream
-	 * @returns True if a privacy confirmation is shown, otherwise a chat request object. This is used sometimes to modify the prompt
-	 */
 	private async requestPolicyConfirmation(request: vscode.ChatRequest, stream: vscode.ChatResponseStream): Promise<boolean | ChatRequest> {
 		const endpoint = await this.endpointProvider.getChatEndpoint(request);
-		if (endpoint.policy === 'enabled') {
-			return request;
-		}
-		// Accept the policy and agree to the terms. Then send the request through so the LLM can answer it
-		if (request.acceptedConfirmationData?.[0]?.prompt && (await endpoint.acceptChatPolicy())) {
-			return { ...request, prompt: request.acceptedConfirmationData[0].prompt };
-		}
-		// User is being prompted for the first time to acknowledge
-		stream.confirmation(`Enable ${endpoint.name} for all clients`, endpoint.policy.terms, { prompt: request.prompt }, ['Enable']);
+		if (endpoint.policy === 'enabled') { return request; }
+		const reqAny = request as any;
+		if (reqAny.acceptedConfirmationData?.[0]?.prompt && (await endpoint.acceptChatPolicy())) { return { ...request, prompt: reqAny.acceptedConfirmationData[0].prompt } as any; }
+		stream.confirmation(`Enable ${endpoint.name} for all clients`, endpoint.policy.terms, { prompt: reqAny.prompt }, ['Enable']);
 		return true;
 	}
 
 	private async switchToBaseModel(request: vscode.ChatRequest, stream: vscode.ChatResponseStream): Promise<ChatRequest> {
 		const endpoint = await this.endpointProvider.getChatEndpoint(request);
 		const baseEndpoint = await this.endpointProvider.getChatEndpoint('copilot-base');
-		// If it has a 0x multipler, it's free so don't switch them. If it's BYOK, it's free so don't switch them.
-		if (endpoint.multiplier === 0 || request.model.vendor !== 'copilot' || endpoint.multiplier === undefined) {
-			return request;
-		}
-		if (this._chatQuotaService.overagesEnabled || !this._chatQuotaService.quotaExhausted) {
-			return request;
-		}
-		const baseLmModel = (await vscode.lm.selectChatModels({ id: baseEndpoint.model, family: baseEndpoint.family, vendor: 'copilot' }))[0];
-		if (!baseLmModel) {
-			return request;
-		}
+		const reqAny = request as any;
+		if (endpoint.multiplier === 0 || reqAny.model?.vendor !== 'copilot' || endpoint.multiplier === undefined) { return request; }
+		if (this._chatQuotaService.overagesEnabled || !this._chatQuotaService.quotaExhausted) { return request; }
+		const baseLmModel = (await (vscode as any).lm.selectChatModels({ id: baseEndpoint.model, family: baseEndpoint.family, vendor: 'copilot' }))[0];
+		if (!baseLmModel) { return request; }
 		await vscode.commands.executeCommand('workbench.action.chat.changeModel', { vendor: baseLmModel.vendor, id: baseLmModel.id, family: baseLmModel.family });
-		// Switch to the base model and show a warning
-		request = { ...request, model: baseLmModel };
-		let messageString: vscode.MarkdownString;
+		request = { ...request, model: baseLmModel } as any;
+		let msg: vscode.MarkdownString;
 		if (this.authenticationService.copilotToken?.isIndividual) {
-			messageString = new vscode.MarkdownString(vscode.l10n.t({
-				message: 'You have exceeded your premium request allowance. We have automatically switched you to {0} which is included with your plan. [Enable additional paid premium requests]({1}) to continue using premium models.',
-				args: [baseEndpoint.name, 'command:chat.enablePremiumOverages'],
-				// To make sure the translators don't break the link
-				comment: ["{Locked=']({'}"]
-			}));
-			messageString.isTrusted = { enabledCommands: ['chat.enablePremiumOverages'] };
+			msg = new vscode.MarkdownString(l10n.t({ message: 'You have exceeded your premium request allowance. We have automatically switched you to {0} which is included with your plan. [Enable additional paid premium requests]({1}) to continue using premium models.', args: [baseEndpoint.name, 'command:chat.enablePremiumOverages'], comment: ["{Locked=']({'}"] }));
+			msg.isTrusted = { enabledCommands: ['chat.enablePremiumOverages'] };
 		} else {
-			messageString = new vscode.MarkdownString(vscode.l10n.t('You have exceeded your premium request allowance. We have automatically switched you to {0} which is included with your plan. To enable additional paid premium requests, contact your organization admin.', baseEndpoint.name));
+			msg = new vscode.MarkdownString(l10n.t('You have exceeded your premium request allowance. We have automatically switched you to {0} which is included with your plan. To enable additional paid premium requests, contact your organization admin.', baseEndpoint.name));
 		}
-		stream.warning(messageString);
+		stream.warning(msg);
 		return request;
 	}
 }
-
-type IntentOrGetter = Intent | ((request: vscode.ChatRequest) => Intent);

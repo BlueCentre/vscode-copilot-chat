@@ -21,7 +21,7 @@ export class ConfigContextKeyHelper extends DisposableStore {
 
 		this.add(configurationService.onDidChangeConfiguration(e => {
 			if (setting.advancedSubKey) {
-				// This is a `github.copilot.advanced.*` setting
+				// This is a `swe.agent.advanced.*` setting
 				if (e.affectsConfiguration(`${CopilotConfigPrefix}.advanced`)) {
 					this.updateContextKey();
 				}

@@ -30,7 +30,7 @@ function isGithubExtensionDataEvent(eventName: string, data: Record<string, unkn
 	// TODO: should this also apply to other/all events?
 	if (eventName === 'inlineCompletion.endOfLife' && 'extensionId' in data) {
 		const extId = data['extensionId'];
-		if (typeof extId === 'string' && extId !== 'github.copilot' && extId !== 'github.copilot-chat') {
+		if (typeof extId === 'string' && extId !== 'github.copilot' && extId !== 'vitruvian.agent-chat') {
 			return false;
 		}
 	}

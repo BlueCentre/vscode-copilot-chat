@@ -67,7 +67,7 @@ export class TelemetryData {
 		this.properties['editor_plugin_version'] = envService.getEditorPluginInfo().format();
 		this.properties['client_machineid'] = envService.machineId;
 		this.properties['client_sessionid'] = envService.sessionId;
-		this.properties['copilot_version'] = `copilot/${envService.getVersion()}`;
+		this.properties['agent_version'] = `agent/${envService.getVersion()}`;
 
 		this.properties['common_extname'] = envService.getEditorPluginInfo().name;
 		this.properties['common_extversion'] = envService.getEditorPluginInfo().version;
@@ -78,15 +78,15 @@ export class TelemetryData {
 	 * Iterate config keys defined in the package.json, lookup current config
 	 * value and return as telemetry property. Property name in dotted notation
 	 * and value is a json string.
-	 * e.g. { 'copilot.autocompletion.count': 3 }
+	 * e.g. { 'agent.autocompletion.count': 3 }
 	 */
 	extendWithConfigProperties(configService: IConfigurationService, envService: IEnvService, telemetryConfig: ITelemetryUserConfig): void {
 		const configProperties: { [key: string]: string } = configService.dumpConfig();
-		configProperties['copilot.build'] = envService.getBuild();
-		configProperties['copilot.buildType'] = envService.getBuildType();
+		configProperties['agent.build'] = envService.getBuild();
+		configProperties['agent.buildType'] = envService.getBuildType();
 
 		if (telemetryConfig.trackingId) {
-			configProperties['copilot.trackingId'] = telemetryConfig.trackingId;
+			configProperties['agent.trackingId'] = telemetryConfig.trackingId;
 		}
 		if (telemetryConfig.organizationsList) {
 			configProperties['organizations_list'] = telemetryConfig.organizationsList;

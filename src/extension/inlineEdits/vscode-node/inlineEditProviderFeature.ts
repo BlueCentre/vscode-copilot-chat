@@ -8,10 +8,12 @@ import { IAuthenticationService } from '../../../platform/authentication/common/
 import { ConfigKey, IConfigurationService } from '../../../platform/configuration/common/configurationService';
 import { IEnvService } from '../../../platform/env/common/envService';
 import { IVSCodeExtensionContext } from '../../../platform/extContext/common/extensionContext';
+import { InlineEditRequestLogContext } from '../../../platform/inlineEdits/common/inlineEditLogContext';
 import { ObservableGit } from '../../../platform/inlineEdits/common/observableGit';
 import { NesHistoryContextProvider } from '../../../platform/inlineEdits/common/workspaceEditTracker/nesHistoryContextProvider';
 import { ILogService } from '../../../platform/log/common/logService';
 import { IExperimentationService } from '../../../platform/telemetry/common/nullExperimentationService';
+import { isNotebookCell } from '../../../util/common/notebooks';
 import { createTracer } from '../../../util/common/tracing';
 import { Disposable } from '../../../util/vs/base/common/lifecycle';
 import { autorun, derived, derivedDisposable, observableFromEvent } from '../../../util/vs/base/common/observable';
@@ -30,8 +32,6 @@ import { InlineEditLogger } from './parts/inlineEditLogger';
 import { LastEditTimeTracker } from './parts/lastEditTimeTracker';
 import { VSCodeWorkspace } from './parts/vscodeWorkspace';
 import { makeSettable } from './utils/observablesUtils';
-import { isNotebookCell } from '../../../util/common/notebooks';
-import { InlineEditRequestLogContext } from '../../../platform/inlineEdits/common/inlineEditLogContext';
 
 const TRIGGER_INLINE_EDIT_ON_ACTIVE_EDITOR_CHANGE = false; // otherwise, eg, NES would trigger just when going through search results
 
@@ -80,7 +80,7 @@ export class InlineEditProviderFeature extends Disposable implements IExtensionC
 		const tracer = createTracer(['NES', 'Feature'], (s) => this._logService.trace(s));
 		const constructorTracer = tracer.sub('constructor');
 
-		const hasUpdatedNesSettingKey = 'copilot.chat.nextEdits.hasEnabledNesInSettings';
+		const hasUpdatedNesSettingKey = 'agent.chat.nextEdits.hasEnabledNesInSettings';
 		this._register(autorun((reader) => {
 			const copilotToken = this._copilotToken.read(reader);
 
@@ -177,9 +177,9 @@ export class InlineEditProviderFeature extends Disposable implements IExtensionC
 	}
 }
 
-export const learnMoreCommandId = 'github.copilot.debug.inlineEdit.learnMore';
+export const learnMoreCommandId = 'swe.agent.debug.inlineEdit.learnMore';
 
 export const learnMoreLink = 'https://aka.ms/vscode-nes';
 
-const clearCacheCommandId = 'github.copilot.debug.inlineEdit.clearCache';
-const reportNotebookNESIssueCommandId = 'github.copilot.debug.inlineEdit.reportNotebookNESIssue';
+const clearCacheCommandId = 'swe.agent.debug.inlineEdit.clearCache';
+const reportNotebookNESIssueCommandId = 'swe.agent.debug.inlineEdit.reportNotebookNESIssue';

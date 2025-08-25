@@ -54,10 +54,10 @@ export class LoggingActionsContrib {
 		@IFetcherService private readonly fetcherService: IFetcherService,
 		@ILogService private logService: ILogService,
 	) {
-		this._context.subscriptions.push(vscode.commands.registerCommand('github.copilot.debug.collectDiagnostics', async () => {
+		this._context.subscriptions.push(vscode.commands.registerCommand('swe.agent.debug.collectDiagnostics', async () => {
 			const document = await vscode.workspace.openTextDocument({ language: 'markdown' });
 			const editor = await vscode.window.showTextDocument(document);
-			await appendText(editor, `## GitHub Copilot Chat
+			await appendText(editor, `## SWE Agent Chat
 
 - Extension Version: ${this.envService.getVersion()} (${this.envService.getBuildType()})
 - VS Code: ${this.envService.getEditorInfo().format()}
@@ -68,9 +68,9 @@ export class LoggingActionsContrib {
 
 User Settings:
 \`\`\`json${getNonDefaultSettings()}
-  "github.copilot.advanced.debug.useElectronFetcher": ${this.configurationService.getConfig<boolean>(ConfigKey.Shared.DebugUseElectronFetcher)},
-  "github.copilot.advanced.debug.useNodeFetcher": ${this.configurationService.getConfig<boolean>(ConfigKey.Shared.DebugUseNodeFetcher)},
-  "github.copilot.advanced.debug.useNodeFetchFetcher": ${this.configurationService.getConfig<boolean>(ConfigKey.Shared.DebugUseNodeFetchFetcher)}
+  "swe.agent.advanced.debug.useElectronFetcher": ${this.configurationService.getConfig<boolean>(ConfigKey.Shared.DebugUseElectronFetcher)},
+  "swe.agent.advanced.debug.useNodeFetcher": ${this.configurationService.getConfig<boolean>(ConfigKey.Shared.DebugUseNodeFetcher)},
+  "swe.agent.advanced.debug.useNodeFetchFetcher": ${this.configurationService.getConfig<boolean>(ConfigKey.Shared.DebugUseNodeFetchFetcher)}
 \`\`\`${getProxyEnvVariables()}
 `);
 			const urls = [

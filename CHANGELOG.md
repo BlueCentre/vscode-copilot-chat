@@ -33,13 +33,13 @@ Let us know what you think!
 
 #### Tool grouping (Experimental)
 
-**Setting**: `github.copilot.chat.virtualTools.threshold`
+**Setting**: `swe.agent.chat.virtualTools.threshold`
 
 The maximum number of tools that you can use for a single chat request is currently 128. Previously, you could quickly reach this limit by installing MCP servers with many tools, requiring you to deselect some tools in order to proceed.
 
 In this release of VS Code, we have enabled an experimental tool-calling mode for when the number of tools exceeds the maximum limit. Tools are automatically grouped and the model is given the ability to activate and call groups of tools.
 
-This behavior, including the threshold, is configurable via the setting `github.copilot.chat.virtualTools.threshold`.
+This behavior, including the threshold, is configurable via the setting `swe.agent.chat.virtualTools.threshold`.
 
 #### Terminal auto-approve improvements
 
@@ -169,7 +169,7 @@ Math rendering can be enabled using `chat.math.enabled`. Currently, it is off by
 
 #### Context7 integration for project scaffolding (Experimental)
 
-**Setting**: `github.copilot.chat.newWorkspace.useContext7`
+**Setting**: `swe.agent.chat.newWorkspace.useContext7`
 
 When you scaffold a new project with `#new` in chat, you can now make sure that it uses the latest documentation and APIs from **Context7**, if you have already installed the Context7 MCP server.
 
@@ -260,7 +260,7 @@ GitHub Copilot updates from [June 2025](https://code.visualstudio.com/updates/v1
 
 #### Copilot Chat is open source
 
-We're excited to announce that we've open sourced the GitHub Copilot Chat extension! The source code is now available at [`microsoft/vscode-copilot-chat`](https://github.com/microsoft/vscode-copilot-chat) under the MIT license.
+We're excited to announce that we've open sourced the SWE Agent Chat extension! The source code is now available at [`microsoft/vscode-copilot-chat`](https://github.com/microsoft/vscode-copilot-chat) under the MIT license.
 
 This marks a significant milestone in our commitment to transparency and community collaboration. By open sourcing the extension, we're enabling the community to:
 
@@ -353,7 +353,7 @@ Agent mode now has a mechanism for auto approving commands in the terminal. Here
 There are currently two settings: the allow list and the deny list. The allow list is a list of command _prefixes_ or regular expressions that when matched allows the command to be run without explicit approval. For example, the following will allow any command starting with `npm run test` to be run, as well as _exactly_ `git status` or `git log`:
 
 ```json
-"github.copilot.chat.agent.terminal.allow list": {
+"swe.agent.chat.agent.terminal.allow list": {
   "npm run test": true,
   "/^git (status|log)$/": true
 }
@@ -366,10 +366,10 @@ As for chained commands, we try to detect these cases based on the shell and req
 The deny list has the same format as the allow list but will override it and force approval. For now this is mostly of use if you have a broad entry in the allow list and want to block certain commands that it may include. For example the following will allow all commands starting with `npm run` except if it starts with `npm run danger`:
 
 ```json
-"github.copilot.chat.agent.terminal.allow list": {
+"swe.agent.chat.agent.terminal.allow list": {
   "npm run": true
 },
-"github.copilot.chat.agent.terminal.denyList": {
+"swe.agent.chat.agent.terminal.denyList": {
   "npm run danger": true
 }
 ```
@@ -379,7 +379,7 @@ Thanks to the protections that we gain against prompt injection from [workspace 
 * Allow list: `echo`, `cd`, `ls`, `cat`, `pwd`, `Write-Host`, `Set-Location`, `Get-ChildItem`, `Get-Content`, `Get-Location`
 * Deny list: `rm`, `rmdir`, `del`, `kill`, `curl`, `wget`, `eval`, `chmod`, `chown`, `Remove-Item`
 
-The two major parts we want to add to this feature are a UI entry point to more easily add new commands to the list ([#253268](https://github.com/microsoft/vscode/issues/253268)) and an opt-in option to allow an LLM to evaluate the command(s) safety ([#253267](https://github.com/microsoft/vscode/issues/253267)). We are also planning on both removing the `github.copilot.` prefix of these settings ([#253314](https://github.com/microsoft/vscode/issues/253314)) as well as merging them together ([#253472](https://github.com/microsoft/vscode/issues/253472)) in the next release before it becomes a preview setting.
+The two major parts we want to add to this feature are a UI entry point to more easily add new commands to the list ([#253268](https://github.com/microsoft/vscode/issues/253268)) and an opt-in option to allow an LLM to evaluate the command(s) safety ([#253267](https://github.com/microsoft/vscode/issues/253267)). We are also planning on both removing the `swe.agent.` prefix of these settings ([#253314](https://github.com/microsoft/vscode/issues/253314)) as well as merging them together ([#253472](https://github.com/microsoft/vscode/issues/253472)) in the next release before it becomes a preview setting.
 
 #### Terminal command simplification
 
@@ -431,9 +431,9 @@ We've seen that, on occasion, models want to call the Fetch tool with non-HTTP U
 
 #### Clearer language model access management
 
-We've reworked the UX around managing extension access to language models provided by extensions. Previously, you saw an item in the Account menu that said **AccountName (GitHub Copilot Chat)**, which had nothing to do with what account GitHub Copilot Chat was using. Rather, it allowed you to manage which extensions had access to the language models provided by Copilot Chat.
+We've reworked the UX around managing extension access to language models provided by extensions. Previously, you saw an item in the Account menu that said **AccountName (SWE Agent Chat)**, which had nothing to do with what account SWE Agent Chat was using. Rather, it allowed you to manage which extensions had access to the language models provided by Copilot Chat.
 
-To make this clearer, we've removed the **AccountName (GitHub Copilot Chat)** item and replaced it with a new item called **Manage Language Model Access...**. This item opens a Quick Pick that enables you to manage which extensions have access to the language models provided by GitHub Copilot Chat.
+To make this clearer, we've removed the **AccountName (SWE Agent Chat)** item and replaced it with a new item called **Manage Language Model Access...**. This item opens a Quick Pick that enables you to manage which extensions have access to the language models provided by SWE Agent Chat.
 
 ![Screenshot that shows the language model access Quick Pick.](https://code.visualstudio.com/assets/updates/1_102/lm-access-qp.png)
 
@@ -826,7 +826,7 @@ For the next milestone, we are also considering removing the toggle and changing
 
 Last milestone, we introduced [keyword suggestions](https://code.visualstudio.com/updates/v1_100#_semantic-text-search-with-keyword-suggestions-experimental) in the Search view to help you find relevant results faster. We have now significantly improved the performance of the suggestions, so you will see the results ~5x faster than before.
 
-We have also moved the setting from the Chat extension into VS Code core, and renamed it from `github.copilot.chat.search.keywordSuggestions` to `search.searchView.keywordSuggestions`.
+We have also moved the setting from the Chat extension into VS Code core, and renamed it from `swe.agent.chat.search.keywordSuggestions` to `search.searchView.keywordSuggestions`.
 
 #### Semantic search behavior options (Preview)
 
@@ -844,7 +844,7 @@ By default, semantic search is only run when you explicitly request it. We have 
 
 #### NES import suggestions
 
-**Setting**: `github.copilot.nextEditSuggestions.fixes`
+**Setting**: `swe.agent.nextEditSuggestions.fixes`
 
 Last month, we introduced support for next edit suggestions to automatically suggest adding missing import statements for TypeScript and JavaScript. In this release, we've improved the accuracy and reliability of these suggestions and expanded support to Python files as well. Additionally, NES is now enabled by default for all users.
 
@@ -858,9 +858,9 @@ Accepting next edit suggestions is now more seamless. Once you accept a suggesti
 
 #### Follow mode for agent cell execution
 
-**Setting**: `github.copilot.chat.notebook.followCellExecution.enabled`
+**Setting**: `swe.agent.chat.notebook.followCellExecution.enabled`
 
-With follow mode, the Notebook view will automatically scroll to the cell that is currently being executed by the agent. Use the `github.copilot.chat.notebook.followCellExecution.enabled` setting to enable or disable follow mode for agent cell execution in Jupyter Notebooks.
+With follow mode, the Notebook view will automatically scroll to the cell that is currently being executed by the agent. Use the `swe.agent.chat.notebook.followCellExecution.enabled` setting to enable or disable follow mode for agent cell execution in Jupyter Notebooks.
 
 Once the agent has used the run cell tool, the Notebook toolbar is updated with a pin icon, indicating the state of follow mode. You can toggle the behavior mid agent response without changing the base setting value, allowing you to follow the work of the agent in real-time, and toggle it off when you want to review a specific portion of code while the agent continues to iterate. When you wish to follow again, simply toggle the mode, and join at the next execution.
 
@@ -1059,9 +1059,9 @@ The keyboard shortcut <kbd>Ctrl+Alt+I</kbd> still just opens the Chat view, but 
 
 #### Autofix diagnostics from agent mode edits
 
-**Setting**: `github.copilot.chat.agent.autoFix`
+**Setting**: `swe.agent.chat.agent.autoFix`
 
-If a file edit in agent mode introduces new errors, agent mode can now detect them, and automatically propose a follow-up edit. You can disable this behavior with `github.copilot.chat.agent.autoFix`.
+If a file edit in agent mode introduces new errors, agent mode can now detect them, and automatically propose a follow-up edit. You can disable this behavior with `swe.agent.chat.agent.autoFix`.
 
 #### Handling of undo and manual edits in agent mode
 
@@ -1164,15 +1164,15 @@ Semantic text search now supports AI-powered keyword suggestions. By enabling th
 
 #### New Next Edit Suggestions (NES) model
 
-**Setting**: `github.copilot.nextEditSuggestions.enabled`
+**Setting**: `swe.agent.nextEditSuggestions.enabled`
 
 We're excited to introduce a new model powering NES, designed to provide faster and more contextually relevant code recommendations. This updated model offers improved performance, delivering suggestions with reduced latency, and offering suggestions that are less intrusive and align more closely with your recent edits. This update is part of our ongoing commitment to refining AI-assisted development tools within Visual Studio Code.
 
 #### Import suggestions
 
-**Setting**: `github.copilot.nextEditSuggestions.fixes:true`
+**Setting**: `swe.agent.nextEditSuggestions.fixes:true`
 
-Next Edit Suggestions (NES) can now automatically suggest adding missing import statements in JavaScript and TypeScript files. Enable this feature by setting `github.copilot.nextEditSuggestions.fixes:true`. We plan to further enhance this capability by supporting imports from additional languages in future updates.
+Next Edit Suggestions (NES) can now automatically suggest adding missing import statements in JavaScript and TypeScript files. Enable this feature by setting `swe.agent.nextEditSuggestions.fixes:true`. We plan to further enhance this capability by supporting imports from additional languages in future updates.
 
 ![Screenshot showing NES suggesting an import statement.](https://code.visualstudio.com/assets/updates/1_100/nes-import.png)
 
@@ -1287,7 +1287,7 @@ The welcome screen provides options to either switch to the release version of t
 
 #### Semantic text search improvements (Experimental)
 
-**Setting**: `github.copilot.chat.search.semanticTextResults:true`
+**Setting**: `swe.agent.chat.search.semanticTextResults:true`
 
 AI-powered semantic text search is now enabled by default in the Search view. Use the `<kbd>Ctrl+I</kbd>` keyboard shortcut to trigger a semantic search, which shows you the most relevant results based on your query, on top of the regular search results.
 
@@ -1319,7 +1319,7 @@ We have done some smaller tweaks when generating edits with AI:
 
 #### Next Edit Suggestions general availability
 
-**Setting**: `github.copilot.nextEditSuggestions.enabled:true`
+**Setting**: `swe.agent.nextEditSuggestions.enabled:true`
 
 We're happy to announce the general availability of Next Edit Suggestions (NES)! In addition, we've also made several improvements to the overall user experience of NES:
 
@@ -1387,7 +1387,7 @@ This milestone, we have added several new built-in tools to agent mode.
 
 ##### Thinking tool
 
-**Setting**: `github.copilot.chat.agent.thinkingTool:true`.
+**Setting**: `swe.agent.chat.agent.thinkingTool:true`.
 
 Inspired by [Anthropic's research](https://www.anthropic.com/engineering/claude-think-tool), we've added support for a thinking tool in agent mode that can be used to give any model the opportunity to think between tool calls. This improves our agent's performance on complex tasks in-product and on the [SWE-bench](https://www.swebench.com/) eval.
 
@@ -1416,7 +1416,7 @@ In agent mode this tool will be picked up automatically but you can also referen
 
 #### Create a new workspace with agent mode (Experimental)
 
-**Setting**: `github.copilot.chat.newWorkspaceCreation.enabled`
+**Setting**: `swe.agent.chat.newWorkspaceCreation.enabled`
 
 You can now scaffold a new VS Code workspace in [agent mode](https://code.visualstudio.com/docs/copilot/chat/chat-agent-mode). Whether you’re setting up a VS Code extension, an MCP server, or other development environments, agent mode helps you to initialize, configure, and launch these projects with the necessary dependencies and settings.
 
@@ -1588,7 +1588,7 @@ Agent mode autonomously searches your codebase for relevant context. Expand the 
 We've also made various improvements to the prompt and behavior of agent mode:
 
 * The undo and redo actions in chat now undo or redo the last file edit made in a chat response. This is useful for agent mode, as you can now undo certain steps the model took without rolling back the entire chat response.
-* Agent mode can now run your build [tasks](https://code.visualstudio.com/docs/editor/tasks) automatically or when instructed to do so. Disable this functionality via the `github.copilot.chat.agent.runTasks` setting, in the event that you see the model running tasks when it should not.
+* Agent mode can now run your build [tasks](https://code.visualstudio.com/docs/editor/tasks) automatically or when instructed to do so. Disable this functionality via the `swe.agent.chat.agent.runTasks` setting, in the event that you see the model running tasks when it should not.
 
 Learn more about [Copilot Edits agent mode](https://code.visualstudio.com/docs/copilot/copilot-edits#_use-agent-mode-preview) or read the [agent mode announcement blog post](https://code.visualstudio.com/blogs/2025/02/24/introducing-copilot-agent-mode).
 
@@ -1598,9 +1598,9 @@ Learn more about [Copilot Edits agent mode](https://code.visualstudio.com/docs/c
 
 We are introducing notebook support in Copilot Edits. You can now use Copilot to edit notebook files with the same intuitive experience as editing code files. Create new notebooks from scratch, modify content across multiple cells, insert and delete cells, and change cell types. This preview feature provides a seamless workflow when working with data science or documentation notebooks.
 
-> For the best notebook editing experience with Copilot, we recommend using [VS Code Insiders](https://code.visualstudio.com/insiders/) and the pre-release version of GitHub Copilot Chat, where you'll get the latest improvements to this feature as they're developed.
+> For the best notebook editing experience with Copilot, we recommend using [VS Code Insiders](https://code.visualstudio.com/insiders/) and the pre-release version of SWE Agent Chat, where you'll get the latest improvements to this feature as they're developed.
 
-<video src="https://code.visualstudio.com/assets/updates/1_98/notebook_copilot_edits.mp4" title="Video that shows using Copilot Edits to modify a notebook." autoplay loop controls muted></video>
+<video src="https://code.visualstudio.com/assets/updates/1_98/notebook_agent_edits.mp4" title="Video that shows using Copilot Edits to modify a notebook." autoplay loop controls muted></video>
 
 #### Refined editor integration
 
@@ -1620,7 +1620,7 @@ In preparation for unifying Copilot Edits with Copilot Chat, we've given Copilot
 
 With the `chat.renderRelatedFiles` setting, you can enable getting suggestions for related files. Related file suggestions are rendered below the chat attachments.
 
-![Screenshot that shows the updated Copilot Edits attachments and changed files user experience.](https://code.visualstudio.com/assets/updates/1_98/copilot_edits_ui.png)
+![Screenshot that shows the updated Copilot Edits attachments and changed files user experience.](https://code.visualstudio.com/assets/updates/1_98/agent_edits_ui.png)
 
 ### Removed Copilot Edits limits
 
@@ -1642,17 +1642,17 @@ Not only is it not as jarring as a modal dialog, but it also has new functionali
 
 1. **Grant:** you're taken through the regular authentication flow like before (via the modal).
 1. **Not Now:** VS Code remembers your choice and won't bother you again until your next VS Code window session. The only exception to this is if the feature needs this additional permission to function, like `@github`.
-1. **Never Ask Again:** VS Code remembers your choice and persists it via the `github.copilot.advanced.authPermissions` setting. Any feature that needs this additional permission will fail.
+1. **Never Ask Again:** VS Code remembers your choice and persists it via the `swe.agent.advanced.authPermissions` setting. Any feature that needs this additional permission will fail.
 
 It's important to note that this confirmation does not confirm or deny Copilot (the service) access to your repositories. This is only how VS Code's Copilot experience authenticates. To configure what Copilot can access, please read the docs [on content exclusion](https://docs.github.com/en/copilot/managing-copilot/configuring-and-auditing-content-exclusion/excluding-content-from-github-copilot).
 
 ### More advanced codebase search in Copilot Chat
 
-**Setting**: `github.copilot.chat.codesearch.enabled`
+**Setting**: `swe.agent.chat.codesearch.enabled`
 
 When you add `#codebase` to your Copilot Chat query, Copilot helps you find relevant code in your workspace for your chat prompt. `#codebase` can now run tools like text search and file search to pull in additional context from your workspace.
 
-Set `github.copilot.chat.codesearch.enabled` to enable this behavior. The full list of tools is:
+Set `swe.agent.chat.codesearch.enabled` to enable this behavior. The full list of tools is:
 
 * Embeddings-based semantic search
 * Text search
@@ -1677,7 +1677,7 @@ Previously, you could attach folders as context by using drag and drop from the 
 
 **Settings**:
 
-* `github.copilot.nextEditSuggestions.enabled`
+* `swe.agent.nextEditSuggestions.enabled`
 * `editor.inlineSuggest.edits.showCollapsed:true`
 
 We've added a collapsed mode for NES. When you enable this mode, only the NES suggestion indicator is shown in the left editor margin. The code suggestion itself is revealed only when you navigate to it by pressing <kbd>Tab</kbd>. Consecutive suggestions are shown immediately until a suggestion is not accepted.
@@ -1700,7 +1700,7 @@ Alternatively, you can change the model that is used for code completions via **
 
 This release, we added more models to choose from when using Copilot. The following models are now available in the model picker in Visual Studio Code and github.com chat:
 
-* **GPT 4.5 (Preview)**: OpenAI’s latest model, GPT-4.5, is now available in GitHub Copilot Chat to Copilot Enterprise users. GPT-4.5 is a large language model designed with advanced capabilities in intuition, writing style, and broad knowledge. Learn more about the GPT-4.5 model availability in the [GitHub blog post](https://github.blog/changelog/2025-02-27-openai-gpt-4-5-in-github-copilot-now-available-in-public-preview).
+* **GPT 4.5 (Preview)**: OpenAI’s latest model, GPT-4.5, is now available in SWE Agent Chat to Copilot Enterprise users. GPT-4.5 is a large language model designed with advanced capabilities in intuition, writing style, and broad knowledge. Learn more about the GPT-4.5 model availability in the [GitHub blog post](https://github.blog/changelog/2025-02-27-openai-gpt-4-5-in-github-copilot-now-available-in-public-preview).
 
 * **Claude 3.7 Sonnet (Preview)**: Claude 3.7 Sonnet is now available to all customers on paid Copilot plans. This new Sonnet model supports both thinking and non-thinking modes in Copilot. In initial testing, we’ve seen particularly strong improvements in agentic scenarios. Learn more about the Claude 3.7 Sonnet model availability in the [GitHub blog post](https://github.blog/changelog/2025-02-24-claude-3-7-sonnet-is-now-available-in-github-copilot-in-public-preview/).
 
@@ -1740,11 +1740,11 @@ We are experimenting with enhanced context for inline completions and `/fix` com
 
 ### Custom instructions for pull request title and description
 
-You can provide custom instructions for generating pull request title and description with the setting `github.copilot.chat.pullRequestDescriptionGeneration.instructions`.  You can point the setting to a file in your workspace, or you can provide instructions inline in your settings:
+You can provide custom instructions for generating pull request title and description with the setting `swe.agent.chat.pullRequestDescriptionGeneration.instructions`.  You can point the setting to a file in your workspace, or you can provide instructions inline in your settings:
 
 ```
 {
-  "github.copilot.chat.pullRequestDescriptionGeneration.instructions": [
+  "swe.agent.chat.pullRequestDescriptionGeneration.instructions": [
     {
       "text": "Prefix every PR title with an emoji."
     }

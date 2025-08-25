@@ -23,7 +23,7 @@ export async function activate(context: vscode.ExtensionContext) {
 	let isCorrectRepo = false;
 	try {
 		const pkg = JSON.parse(String(await fs.promises.readFile(join(REPO_ROOT, 'package.json'))));
-		isCorrectRepo = pkg.name === 'copilot-chat';
+		isCorrectRepo = pkg.name === 'agent-chat';
 	} catch (err) {
 		console.error('[STEST] error reading ' + join(REPO_ROOT, 'package.json'));
 		console.error(err);

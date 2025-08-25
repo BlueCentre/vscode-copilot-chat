@@ -38,7 +38,7 @@ interface CopilotOnlyParams {
 	/** Copilot-only: NWO of repository, if any */
 	nwo?: string;
 
-	copilot_thread_id?: string;
+	agent_thread_id?: string;
 }
 
 export interface ChatRequest extends

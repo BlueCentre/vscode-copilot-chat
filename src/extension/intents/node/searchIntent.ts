@@ -48,7 +48,7 @@ function createSearchFollowUps(args: any): vscode.Command[] {
 		isCaseSensitive: args.isRegex ?? false,
 	};
 	searchResponses.push({
-		command: 'github.copilot.executeSearch',
+		command: 'swe.agent.executeSearch',
 		arguments: [searchArg],
 		title: l10n.t("Search"),
 	});

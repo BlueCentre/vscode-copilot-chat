@@ -59,7 +59,7 @@ export async function simulatePanelCodeMapper(
 				if (!existingReference) {
 					const varWithArg = `file:${activeTextEditor.document.uri.path}`;
 					return [{
-						id: `copilot.file`,
+						id: `agent.file`,
 						name: varWithArg,
 						value: new Location(
 							activeTextEditor.document.uri,

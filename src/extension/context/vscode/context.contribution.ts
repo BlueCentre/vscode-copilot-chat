@@ -21,7 +21,7 @@ export function create(accessor: ServicesAccessor): IDisposable {
 
 function registerContextCommands(accessor: ServicesAccessor) {
 	return Disposable.from(
-		commands.registerCommand('github.copilot.chat.attachSelection', () => {
+		commands.registerCommand('swe.agent.chat.attachSelection', () => {
 			return commands.executeCommand('workbench.action.chat.attachSelection');
 		}),
 	);
