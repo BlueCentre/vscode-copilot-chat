@@ -13,6 +13,7 @@ import { IExperimentationService } from '../../../platform/telemetry/common/null
 import { IInstantiationServiceBuilder, InstantiationServiceBuilder } from '../../../util/common/services';
 import { IInstantiationService } from '../../../util/vs/platform/instantiation/common/instantiation';
 import { CopilotExtensionApi } from '../../api/vscode/extensionApi';
+import { registerBrandArtifacts } from '../../../brand/common/brandHooks';
 import { ContributionCollection, IExtensionContributionFactory } from '../../common/contributions';
 
 // ##################################################################################
@@ -71,6 +72,8 @@ export async function baseActivate(configuration: IExtensionActivationConfigurat
 		// THIS is awaited because some contributions can block activation
 		// via `IExtensionContribution#activationBlocker`
 		const contributions = instantiationService.createInstance(ContributionCollection, configuration.contributions);
+		// Register brand artifacts (prompt augmentors, custom participants, etc.)
+		registerBrandArtifacts(instantiationService as any);
 		context.subscriptions.push(contributions);
 		await contributions.waitForActivationBlockers();
 	});
