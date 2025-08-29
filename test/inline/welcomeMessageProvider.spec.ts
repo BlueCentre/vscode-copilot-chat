@@ -55,13 +55,14 @@ describe('welcomeMessageProvider personalized greeting', () => {
 			name: 'TestBrand',
 			agentName: 'TestAgent',
 			icon: 'assets/icon.png',
-			features: { personalizedWelcome: true, useAgentName: true, personalizedUserGreeting: true }
+			features: { personalizedWelcome: true, useAgentName: true, personalizedUserGreeting: true, welcomeTryPrompts: false }
 		} as any);
 		vi.spyOn(userNameMod, 'getCachedUserDisplayNameSync').mockReturnValue(undefined);
 		const md = getAdditionalWelcomeMessage(mockAccessor);
 		const text = md?.value || md?.toString() || '';
 		expect(text).toContain('Welcome to TestBrand');
 		expect(text).not.toContain('Welcome back,');
+		expect(text).not.toContain('Try prompts:');
 	});
 
 	it('returns undefined when no segments and feature disabled', () => {

@@ -32,5 +32,13 @@ coverage/
 # Base cache database (GC mode)
 test/simulation/cache/_base.sqlite
 
+# Temporary test artifacts from fileHeader rule harness
+tmp-header-*/
+tmp-header-*.ts
+test/tmp-header/
+
+# Generated layer sqlite cache files
+test/simulation/cache/layers/*.sqlite
+
 test/aml/out
 src/extension/completions-core

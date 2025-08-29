@@ -58,7 +58,9 @@ export function getAdditionalWelcomeMessage(accessor: ServicesAccessor): vscode.
 			)
 		);
 
+		// Try Prompts (sample clickable queries) shown when enabled.
 		if (brandConfig.features.welcomeTryPrompts) {
+			// Define three SWE-focused starter prompts.
 			const tryPrompts = [
 				'Explain the architecture of this repository',
 				'Generate unit tests for the selected function',

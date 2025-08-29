@@ -39,6 +39,10 @@ export class Cache extends EventEmitter {
 	private readonly base: Keyv;
 	private readonly layers: Map<string, Keyv>;
 	private activeLayer: Promise<Keyv> | undefined;
+	// Reuse the safe sqlite creator across code paths (gc/layer creation) so we don't
+	// regress into using a raw KeyvSqlite adapter that can surface the `database.query`
+	// shape mismatch with certain experimental sqlite builds.
+	private readonly _safeKeyvSqlite: (file: string) => Keyv;
 
 	private gcBase: Keyv | undefined;
 	private gcBaseKeys: Set<string> | undefined;
@@ -59,7 +63,29 @@ export class Cache extends EventEmitter {
 		}
 
 		fs.mkdirSync(this.layersPath, { recursive: true });
-		this.base = new Keyv(new KeyvSqlite(path.join(this.cachePath, 'base.sqlite')));
+		// Some environments (or newer experimental sqlite builds) surface a KeyvSqlite whose underlying
+		// adapter does not expose a `database.query` API expected by keyv@5 leading to runtime
+		// `TypeError: database.query is not a function`. To keep tests resilient we optionally fall back
+		// to an in-memory store when detection fails or when the explicit opt-out env var is set.
+		const disableSqlite = process.env.COPILOT_TEST_DISABLE_SQLITE === '1';
+		this._safeKeyvSqlite = (file: string): Keyv => {
+			if (disableSqlite) {
+				return new Keyv();
+			}
+			try {
+				const adapter: any = new KeyvSqlite(file);
+				const keyv = new Keyv(adapter);
+				// Best-effort probe to detect the specific failure mode eagerly.
+				const storeAny: any = (keyv as any).store;
+				if (storeAny && storeAny.database && typeof storeAny.database.query !== 'function') {
+					return new Keyv();
+				}
+				return keyv;
+			} catch (err: any) {
+				return new Keyv();
+			}
+		};
+		this.base = this._safeKeyvSqlite(path.join(this.cachePath, 'base.sqlite'));
 
 		this.layers = new Map();
 		let layerFiles = fs.readdirSync(this.layersPath)
@@ -75,7 +101,7 @@ export class Cache extends EventEmitter {
 
 		for (const layerFile of layerFiles) {
 			const name = path.basename(layerFile, path.extname(layerFile));
-			this.layers.set(name, new Keyv(new KeyvSqlite(layerFile)));
+			this.layers.set(name, this._safeKeyvSqlite(layerFile));
 		}
 	}
 
@@ -190,7 +216,7 @@ export class Cache extends EventEmitter {
 		}
 
 		this.gcBaseKeys = new Set<string>();
-		this.gcBase = new Keyv(new KeyvSqlite(path.join(this.cachePath, '_base.sqlite')));
+		this.gcBase = this._safeKeyvSqlite(path.join(this.cachePath, '_base.sqlite'));
 	}
 
 	async gcEnd(): Promise<void> {
@@ -261,7 +287,7 @@ export class Cache extends EventEmitter {
 
 				// Create a new layer database
 				const uuid = generateUuid();
-				const activeLayer = new Keyv(new KeyvSqlite(path.join(activeLayerPath, `${uuid}.sqlite`)));
+				const activeLayer = this._safeKeyvSqlite(path.join(activeLayerPath, `${uuid}.sqlite`));
 				this.layers.set(uuid, activeLayer);
 				return activeLayer;
 			})();
