@@ -2,3 +2,7 @@
 
 # Enable Git LFS for SQLite database files
 *.sqlite filter=lfs diff=lfs merge=lfs -text
+
+# Use custom merge driver for package.json to avoid branding overlay conflicts
+package.json merge=packagejsonbrand
+

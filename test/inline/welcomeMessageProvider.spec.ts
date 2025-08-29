@@ -70,7 +70,7 @@ describe('welcomeMessageProvider personalized greeting', () => {
 			name: 'TestBrand',
 			agentName: 'TestAgent',
 			icon: 'assets/icon.png',
-			features: { personalizedWelcome: false, useAgentName: true, personalizedUserGreeting: false, welcomeTryPrompts: false }
+			features: { personalizedWelcome: false, useAgentName: true, personalizedUserGreeting: false, welcomeTryPrompts: true }
 		} as any);
 		const md = getAdditionalWelcomeMessage(mockAccessor);
 		expect(md).toBeUndefined();

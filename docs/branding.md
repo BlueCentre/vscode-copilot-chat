@@ -113,6 +113,7 @@ This will: fetch, rebase (or merge), handle branding & tests, namespace smoke te
 - Introduce runtime toggle to switch between upstream and branded identity (dev aid).
 - Automated lint rule forbidding raw "GitHub Copilot" in prompts (except allow‑listed paths).
 - Script to produce a diff report of brand-impacting upstream changes.
+- Custom git merge driver (added) now minimizes `package.json` conflicts by preferring upstream structural changes then re-applying overlay.
 
 ---
 This document is intentionally concise to reduce maintenance overhead while capturing the key indirection points that keep the branding layer low‑conflict.
@@ -249,6 +250,49 @@ MAINT_AUTO_REBASE=1 MAINT_CLEAN_INSTALL=1 MAINT_ALLOW_ENGINE_MISMATCH=1 MAINT_TO
 ```
 
 The summary JSON will contain `autoSync` details (result, conflicts, postDivergence, commit SHA, push info).
+
+### Custom Merge Driver (Conflict Avoidance)
+
+Recurring `package.json` conflicts were caused by the branding overlay mutating manifest
+identity fields. A custom merge driver `packagejsonbrand` (activated via `.gitattributes`)
+neutralizes these by deliberately removing the branding fields during a merge/rebase and
+letting the overlay re-apply them afterwards.
+
+Driver algorithm:
+
+1. Start from the incoming (upstream / "theirs") manifest to preserve upstream structural changes.
+2. Add any dependency entries that exist only in our local copy (so local-only deps survive).
+3. Delete `displayName` & `icon` so they do not participate in textual conflicts.
+4. Maintenance script re-applies branded overlay after a successful sync if fields are missing.
+
+Implementation detail (important for rebases): The actual driver script is written into
+`/.git/merge-drivers/packagejsonbrand.sh` at runtime when `MAINT_ENSURE_MERGE_DRIVER=1` is set.
+This avoids the historical issue where a rebase step rewound the worktree to a commit prior to
+introducing the versioned driver file, causing Git to fail with "No such file or directory".
+
+Manual setup (optional — normally automated by the maintenance script):
+
+```bash
+git config merge.packagejsonbrand.name "Branded package.json merge"
+git config merge.packagejsonbrand.driver "bash .git/merge-drivers/packagejsonbrand.sh %O %A %B %A"
+echo 'package.json merge=packagejsonbrand' >> .git/info/attributes   # ensures attribute if not tracked
+```
+
+Automated ensure (preferred):
+
+```bash
+MAINT_ENSURE_MERGE_DRIVER=1 MAINT_AUTO_REBASE=1 npm run brand:maintain
+```
+
+During execution, the maintenance script will:
+
+- (Re)generate the driver script inside `.git/merge-drivers/` (idempotent).
+- Register or update the Git config driver command to the absolute internal path.
+- Inject an `info/attributes` rule if the tracked `.gitattributes` is missing or overridden.
+- Attempt inline auto-resolution if a conflict still arises (using index stages) when
+    `MAINT_AUTO_RESOLVE_PACKAGE_JSON=1` is set.
+
+Result: rebases should proceed without manual intervention; branding is restored afterwards.
 
 
 ### CI Integration Suggestion

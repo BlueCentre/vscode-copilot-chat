@@ -11,6 +11,7 @@ import path from 'path';
 import tseslint from 'typescript-eslint';
 import { fileURLToPath } from 'url';
 
+
 import localEslint from './.eslintplugin/index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -118,6 +119,14 @@ export default tseslint.config(
 			'import': importEslint,
 		},
 		rules: {
+			// Disallow new raw "GitHub Copilot" literals outside documented allow-list to protect branding layer.
+			'no-restricted-syntax': [
+				'error',
+				{
+					selector: 'Literal[value="GitHub Copilot"]',
+					message: 'Use prompt indirection or allow-list comment for brand literal.'
+				}
+			],
 			'no-restricted-imports': [
 				'error',
 				// node: builtins

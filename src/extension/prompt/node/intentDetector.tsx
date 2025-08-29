@@ -5,6 +5,7 @@
 
 import { BasePromptElementProps, PromptElement, PromptElementProps, PromptMetadata, Raw, SystemMessage, UserMessage } from '@vscode/prompt-tsx';
 import type { CancellationToken, ChatContext, ChatParticipantDetectionProvider, ChatParticipantDetectionResult, ChatParticipantMetadata, ChatRequest, Uri, ChatLocation as VscodeChatLocation } from 'vscode';
+import { agentNameForPrompts } from '../../../brand/common/promptIdentity';
 import { CHAT_PARTICIPANT_ID_PREFIX, getChatParticipantIdFromName } from '../../../platform/chat/common/chatAgents';
 import { ChatFetchResponseType, ChatLocation, ChatResponse } from '../../../platform/chat/common/commonTypes';
 import { getTextPart, roleToString } from '../../../platform/chat/common/globalStringUtils';
@@ -552,7 +553,7 @@ class IntentDetectionPrompt extends PromptElement<IntentDetectionPromptProps> {
 			<>
 				<meta value={fileMetadata} />
 				<SystemMessage>
-					When asked for your name, you must respond with "GitHub Copilot".<br />
+					When asked for your name, you must respond with "{agentNameForPrompts()}".<br />
 					Follow the user's requirements carefully & to the letter.<br />
 				</SystemMessage>
 				<UserMessage>

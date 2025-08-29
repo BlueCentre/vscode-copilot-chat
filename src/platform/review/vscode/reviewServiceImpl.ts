@@ -5,6 +5,7 @@
 
 import * as vscode from 'vscode';
 import { l10n } from 'vscode';
+import { getAgentDisplayName } from '../../../brand/common/brandConfig';
 import { DisposableStore } from '../../../util/vs/base/common/lifecycle';
 import { URI } from '../../../util/vs/base/common/uri';
 import { IAuthenticationService } from '../../authentication/common/authentication';
@@ -28,7 +29,8 @@ export class ReviewServiceImpl implements IReviewService {
 	private _repositoryDisposables = new DisposableStore();
 	private _reviewDiffReposString: string | undefined;
 	private _diagnosticCollection: vscode.DiagnosticCollection | undefined;
-	private _commentController = vscode.comments.createCommentController('github-copilot-review', 'GitHub Copilot Review');
+	// Use dynamic brand for review controller label
+	private _commentController = vscode.comments.createCommentController('github-copilot-review', `${getAgentDisplayName()} Review`);
 	private _comments: InternalComment[] = [];
 	private _monitorActiveThread: any | undefined;
 	private _activeThread: vscode.CommentThread | undefined;
@@ -170,7 +172,7 @@ export class ReviewServiceImpl implements IReviewService {
 				body: typeof comment.body === 'string' ? `${comment.body}${change}${appendText}` : new vscode.MarkdownString(`${comment.body.value}${change}${appendText}`),
 				mode: vscode.CommentMode.Preview,
 				author: {
-					name: l10n.t('GitHub Copilot'),
+					name: l10n.t(getAgentDisplayName()),
 					iconPath: URI.joinPath(this._contextService.extensionUri, 'assets', 'copilot.png'),
 				},
 			}

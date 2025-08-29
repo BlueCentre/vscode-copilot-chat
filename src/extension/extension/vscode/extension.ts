@@ -5,6 +5,8 @@
 
 import * as l10n from '@vscode/l10n';
 import { commands, env, ExtensionContext, ExtensionMode, l10n as vscodeL10n } from 'vscode';
+import { registerBrandArtifacts } from '../../../brand/common/brandHooks';
+import { initializeNamespace } from '../../../brand/common/idNamespace';
 import { isScenarioAutomation } from '../../../platform/env/common/envService';
 import { isProduction } from '../../../platform/env/common/packagejson';
 import { IHeatmapService } from '../../../platform/heatmap/common/heatmapService';
@@ -13,7 +15,6 @@ import { IExperimentationService } from '../../../platform/telemetry/common/null
 import { IInstantiationServiceBuilder, InstantiationServiceBuilder } from '../../../util/common/services';
 import { IInstantiationService } from '../../../util/vs/platform/instantiation/common/instantiation';
 import { CopilotExtensionApi } from '../../api/vscode/extensionApi';
-import { registerBrandArtifacts } from '../../../brand/common/brandHooks';
 import { ContributionCollection, IExtensionContributionFactory } from '../../common/contributions';
 
 // ##################################################################################
@@ -34,6 +35,14 @@ export interface IExtensionActivationConfiguration {
 
 export async function baseActivate(configuration: IExtensionActivationConfiguration) {
 	const context = configuration.context;
+	// Initialize dynamic ID namespacing early so any subsequent registrations that opt-in can
+	// resolve the correct extension id (upstream or fork) consistently.
+	try {
+		initializeNamespace(context.extension.id);
+	} catch (err) {
+		// Non-fatal: namespacing is optional; log verbose info if something unexpected occurs.
+		console.trace('[namespace:init] failed', err);
+	}
 	if (context.extensionMode === ExtensionMode.Test && !configuration.forceActivation && !isScenarioAutomation) {
 		// FIXME Running in tests, don't activate the extension
 		// Avoid bundling the extension code in the test bundle

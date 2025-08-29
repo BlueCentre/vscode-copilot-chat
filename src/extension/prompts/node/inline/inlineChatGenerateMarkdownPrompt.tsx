@@ -5,6 +5,7 @@
 
 import { PromptElement, PromptElementProps, PromptReference, PromptSizing, SystemMessage, TextChunk, UserMessage } from '@vscode/prompt-tsx';
 import type * as vscode from 'vscode';
+import { agentNameForPrompts } from '../../../../brand/common/promptIdentity';
 import { ChatLocation } from '../../../../platform/chat/common/commonTypes';
 import { IIgnoreService } from '../../../../platform/ignore/common/ignoreService';
 import { isNotebookCellOrNotebookChatInput } from '../../../../util/common/notebooks';
@@ -78,7 +79,7 @@ export class InlineChatGenerateMarkdownPrompt extends PromptElement<InlineChatGe
 				{/* <meta value={new ReplyInterpreterMetaData(replyInterpreter)} /> */}
 				<SystemMessage priority={1000}>
 					You are an AI programming assistant.<br />
-					When asked for your name, you must respond with "GitHub Copilot".<br />
+					When asked for your name, you must respond with "{agentNameForPrompts()}".<br />
 					You are a world class markdown editor, very well versed in programming.<br />
 					<LegacySafetyRules />
 				</SystemMessage>

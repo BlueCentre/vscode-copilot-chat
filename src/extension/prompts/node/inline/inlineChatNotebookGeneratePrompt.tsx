@@ -5,6 +5,7 @@
 
 import { BasePromptElementProps, PromptElement, PromptSizing, SystemMessage, UserMessage } from '@vscode/prompt-tsx';
 import type * as vscode from 'vscode';
+import { agentNameForPrompts } from '../../../../brand/common/promptIdentity';
 import { ConfigKey, IConfigurationService } from '../../../../platform/configuration/common/configurationService';
 import { IIgnoreService } from '../../../../platform/ignore/common/ignoreService';
 import { INotebookService } from '../../../../platform/notebook/common/notebookService';
@@ -90,7 +91,7 @@ export class InlineChatNotebookGeneratePrompt extends PromptElement<InlineChatEd
 				<meta value={new ReplyInterpreterMetaData(replyInterpreter)} />
 				<SystemMessage priority={priorities.core}>
 					You are an AI programming assistant.<br />
-					When asked for your name, you must respond with "GitHub Copilot".<br />
+					When asked for your name, you must respond with "{agentNameForPrompts()}".<br />
 					You are a world class expert in programming, and especially good at {lang.languageId}.<br />
 					Source code is always contained in ``` blocks.<br />
 					The user needs help to write some new code.<br />

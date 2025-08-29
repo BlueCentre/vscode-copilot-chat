@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { PromptElement, PromptSizing, SystemMessage, UserMessage } from '@vscode/prompt-tsx';
+import { agentNameForPrompts } from '../../../../brand/common/promptIdentity';
 import { ChatLocation } from '../../../../platform/chat/common/commonTypes';
 import { ConfigKey, IConfigurationService } from '../../../../platform/configuration/common/configurationService';
 import { IIgnoreService } from '../../../../platform/ignore/common/ignoreService';
@@ -77,7 +78,7 @@ export class InlineChatEditCodePrompt extends PromptElement<InlineChatEditCodePr
 			<>
 				<SystemMessage priority={1000}>
 					You are an AI programming assistant.<br />
-					When asked for your name, you must respond with "GitHub Copilot".<br />
+					When asked for your name, you must respond with "{agentNameForPrompts()}".<br />
 					You are a world class expert in programming, and especially good at {languageId}.<br />
 					<LegacySafetyRules />
 				</SystemMessage>
