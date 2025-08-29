@@ -139,7 +139,7 @@ forEditsAndAgent((strategy, variant, model, configurations) => {
 						file: 'foo.ts',
 						selection: [0, 0, 4, 0],
 						visibleRanges: [[9, 0, 4, 0]],
-						query: 'Update #file:foo.ts and #file:bar.ts to use the fibonacci function from #file:version2.ts instead of #file:version1.ts',
+						query: 'Update #file:fixtures/misc/foo.ts and #file:bar.ts to use the fibonacci function from #file:version2.ts instead of #file:version1.ts',
 						validate: async (outcome, workspace, accessor) => {
 							assertWorkspaceEdit(outcome);
 							assert.strictEqual((await getWorkspaceDiagnostics(accessor, workspace, 'tsc')).length, 0);

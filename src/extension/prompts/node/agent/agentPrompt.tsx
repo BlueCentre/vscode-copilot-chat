@@ -602,7 +602,7 @@ class WorkspaceFoldersHint extends PromptElement<BasePromptElementProps> {
 			return (
 				<>
 					I am working in a workspace with the following folders:<br />
-					{folders.map(folder => `- ${this.promptPathRepresentationService.getFilePath(folder)} `).join('\n')}
+					{folders.map(folder => `- ${this.promptPathRepresentationService.getFilePath(folder)}`).join('\n')}
 				</>);
 		} else {
 			return <>There is no workspace currently open.</>;
@@ -757,7 +757,7 @@ function getExplanationReminder(modelFamily: string | undefined, hasTodoTool?: b
 			<Tag name='importantReminders'>
 				Before starting a task, review and follow the guidance in &lt;responseModeHints&gt;, &lt;engineeringMindsetHints&gt;, and &lt;requirementsUnderstanding&gt;.
 				ALWAYS start your response with a brief task receipt and a concise high-level plan for how you will proceed.<br />
-				DO NOT state your identity or model name unless the user explicitly asks you to. <br />
+				DO NOT state your identity or model name unless the user explicitly asks you to.<br />
 				{hasTodoTool && <>You MUST use the todo list tool to plan and track your progress. NEVER skip this step, and START with this step whenever the task is multi-step. This is essential for maintaining visibility and proper execution of large tasks. Follow the todoListToolInstructions strictly.<br /></>}
 				{!hasTodoTool && <>Break down the request into clear, actionable steps and present them as a checklist at the beginning of your response before proceeding with implementation. This helps maintain visibility and ensures all requirements are addressed systematically.<br /></>}
 				When referring to a filename or symbol in the user's workspace, wrap it in backticks.<br />

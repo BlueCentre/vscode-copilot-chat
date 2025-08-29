@@ -20,7 +20,9 @@ export default defineConfig(({ mode }) => ({
 	test: {
 		include: ['**/*.spec.ts', '**/*.spec.tsx'],
 		exclude,
-		env: loadEnv(mode, process.cwd(), ''),
+			// Inject default env vars; disable sqlite adapter usage in unit tests to avoid
+			// experimental runtime differences producing `database.query is not a function`.
+			env: { ...loadEnv(mode, process.cwd(), ''), COPILOT_TEST_DISABLE_SQLITE: '1' },
 		alias: {
 			// similar to aliasing in the esbuild config `.esbuild.ts`
 			// vitest requires aliases to be absolute paths. reference: https://vitejs.dev/config/shared-options#resolve-alias

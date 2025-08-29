@@ -4,10 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 // @ts-check
 import stylisticEslint from '@stylistic/eslint-plugin';
-import tsEslint from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 import importEslint from 'eslint-plugin-import';
-import jsdocEslint from 'eslint-plugin-jsdoc';
 import fs from 'fs';
 import path from 'path';
 import tseslint from 'typescript-eslint';

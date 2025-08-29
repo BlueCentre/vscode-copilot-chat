@@ -60,6 +60,22 @@ export function getAdditionalWelcomeMessage(accessor: ServicesAccessor): vscode.
 				`Tips:\n- Open the most relevant files and make a focused selection for precise answers.\n- Ask for alternatives or improvements ("optimize", "add tests", "make it more idiomatic").\n- Use inline chat for quick edits (select code, press Ctrl+I / Cmd+I).`
 			)
 		);
+
+		// Try Prompts (sample clickable queries) shown when enabled.
+		if (brandConfig.features.welcomeTryPrompts) {
+			// Define three SWE-focused starter prompts.
+			const tryPrompts = [
+				'Explain the architecture of this repository',
+				'Generate unit tests for the selected function',
+				'Identify potential performance bottlenecks in this file'
+			];
+			// Each prompt becomes a command link that opens chat with that query.
+			const enabledCommands = ['workbench.action.chat.open'];
+			const links = tryPrompts.map(p => `- [${p}](command:workbench.action.chat.open?${encodeURIComponent(JSON.stringify({ query: p }))})`).join('\n');
+			const md = new vscode.MarkdownString(vscode.l10n.t('Try prompts:\n{0}', links));
+			md.isTrusted = { enabledCommands };
+			segments.push(md.value ?? md.toString());
+		}
 	}
 
 	if (!segments.length) {

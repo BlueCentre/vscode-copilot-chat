@@ -96,6 +96,7 @@ The script will (optionally) rebase or merge, audit branding, run tests (with fl
 | `MAINT_PUSH_REMOTE=origin` | Remote to push to. |
 | `MAINT_PUSH_BRANCH=<name>` | Target branch (defaults to current). |
 | `features.personalizedUserGreeting` (brandConfig) | Adds "Welcome back, \<user\>" greeting when an authenticated handle is cached. |
+| `features.welcomeTryPrompts` (brandConfig) | Appends a "Try prompts" section with three clickable starter queries in the welcome message. |
 
 Existing flags (`MAINT_CLEAN_INSTALL`, `MAINT_ALLOW_ENGINE_MISMATCH`, `MAINT_SKIP_TESTS`, `MAINT_TOLERATE_TEST_FLAKE`) continue to apply.
 

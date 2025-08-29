@@ -34,12 +34,16 @@ describe('welcomeMessageProvider personalized greeting', () => {
 			name: 'TestBrand',
 			agentName: 'TestAgent',
 			icon: 'assets/icon.png',
-			features: { personalizedWelcome: true, useAgentName: true, personalizedUserGreeting: true }
+			features: { personalizedWelcome: true, useAgentName: true, personalizedUserGreeting: true, welcomeTryPrompts: true }
 		} as any);
 		vi.spyOn(userNameMod, 'getCachedUserDisplayNameSync').mockReturnValue('octocat');
 		const md = getAdditionalWelcomeMessage(mockAccessor);
 		expect(md?.value || md?.toString() || '').toContain('octocat');
 		expect(md?.value || md?.toString() || '').toContain('Welcome back');
+		// Try prompts section when enabled
+		const text = md?.value || md?.toString() || '';
+		expect(text).toContain('Try prompts:');
+		expect(text).toContain('Explain the architecture of this repository');
 	});
 
 	it('falls back to generic when no user', () => {
@@ -47,13 +51,14 @@ describe('welcomeMessageProvider personalized greeting', () => {
 			name: 'TestBrand',
 			agentName: 'TestAgent',
 			icon: 'assets/icon.png',
-			features: { personalizedWelcome: true, useAgentName: true, personalizedUserGreeting: true }
+			features: { personalizedWelcome: true, useAgentName: true, personalizedUserGreeting: true, welcomeTryPrompts: false }
 		} as any);
 		vi.spyOn(userNameMod, 'getCachedUserDisplayNameSync').mockReturnValue(undefined);
 		const md = getAdditionalWelcomeMessage(mockAccessor);
 		const text = md?.value || md?.toString() || '';
 		expect(text).toContain('Welcome to TestBrand');
 		expect(text).not.toContain('Welcome back,');
+		expect(text).not.toContain('Try prompts:');
 	});
 
 	it('returns undefined when no segments and feature disabled', () => {
@@ -61,7 +66,7 @@ describe('welcomeMessageProvider personalized greeting', () => {
 			name: 'TestBrand',
 			agentName: 'TestAgent',
 			icon: 'assets/icon.png',
-			features: { personalizedWelcome: false, useAgentName: true, personalizedUserGreeting: false }
+			features: { personalizedWelcome: false, useAgentName: true, personalizedUserGreeting: false, welcomeTryPrompts: true }
 		} as any);
 		const md = getAdditionalWelcomeMessage(mockAccessor);
 		expect(md).toBeUndefined();

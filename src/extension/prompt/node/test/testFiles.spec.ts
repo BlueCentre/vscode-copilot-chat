@@ -180,7 +180,7 @@ suite.skipIf(process.platform === 'win32')('TestFileFinder', function () {
 		{ filename: 'foo.js', isTestFile: false },
 		{ filename: 'foo.test.js', isTestFile: true },
 		{ filename: 'foo.spec.js', isTestFile: true },
-		{ filename: 'foo.ts', isTestFile: false },
+		{ filename: 'fixtures/misc/foo.ts', isTestFile: false },
 		{ filename: 'foo.test.ts', isTestFile: true },
 		{ filename: 'foo.spec.ts', isTestFile: true },
 		{ filename: 'foo.py', isTestFile: false },
