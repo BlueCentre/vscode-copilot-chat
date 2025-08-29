@@ -13,7 +13,6 @@ import path from 'path';
 import tseslint from 'typescript-eslint';
 import { fileURLToPath } from 'url';
 
-import headerEslint from 'eslint-plugin-header';
 
 import localEslint from './.eslintplugin/index.js';
 
@@ -44,7 +43,7 @@ export default tseslint.config(
 		},
 		plugins: {
 			'@stylistic': stylisticEslint,
-			'header': headerEslint,
+			'local': localEslint,
 		},
 		rules: {
 			'indent': [
@@ -96,48 +95,7 @@ export default tseslint.config(
 			], // non-complete list of globals that are easy to access unintentionally
 			'no-var': 'error',
 			'semi': 'error',
-			'header/header': [
-				'error',
-				'block',
-				[
-					'---------------------------------------------------------------------------------------------',
-					' *  Copyright (c) Microsoft Corporation. All rights reserved.',
-					' *  Licensed under the MIT License. See License.txt in the project root for license information.',
-					' *--------------------------------------------------------------------------------------------'
-				]
-			]
-		},
-		settings: {
-			'import/resolver': {
-				typescript: {
-					extensions: ['.ts', '.tsx']
-				}
-			}
-		},
-	},
-	// All ts files
-	{
-		files: [
-			'**/*.{ts,tsx}',
-		],
-		languageOptions: {
-			parser: tsParser,
-		},
-		plugins: {
-			'@typescript-eslint': tsEslint,
-			'@stylistic': stylisticEslint,
-			'jsdoc': jsdocEslint,
-		},
-		rules: {
-			'jsdoc/no-types': 'error',
-			'@stylistic/member-delimiter-style': 'error',
-			'@typescript-eslint/naming-convention': [
-				'error',
-				{
-					selector: 'class',
-					format: ['PascalCase']
-				}
-			],
+			'local/file-header': 'error',
 		},
 		settings: {
 			'import/resolver': {
@@ -161,7 +119,6 @@ export default tseslint.config(
 		},
 		plugins: {
 			'import': importEslint,
-			'local': localEslint,
 		},
 		rules: {
 			// Disallow new raw "GitHub Copilot" literals outside documented allow-list to protect branding layer.

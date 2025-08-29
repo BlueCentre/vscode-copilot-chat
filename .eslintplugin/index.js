@@ -12,7 +12,9 @@ require('tsx/cjs');
 /** @type {Record<string, import('@typescript-eslint/utils/dist/ts-eslint').LooseRuleDefinition>} */
 const rules = {};
 glob.sync(`*.ts`, { cwd: __dirname }).forEach((file) => {
-	rules[path.basename(file, '.ts')] = require(`./${file}`);
+	const mod = require(`./${file}`);
+	const rule = mod && mod.default ? mod.default : mod;
+	rules[path.basename(file, '.ts')] = rule;
 });
 
 exports.rules = rules;

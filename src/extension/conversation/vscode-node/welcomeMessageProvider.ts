@@ -7,6 +7,7 @@
 import * as vscode from 'vscode';
 import { brandConfig } from '../../../brand/common/brandConfig';
 import { agentNameForPrompts } from '../../../brand/common/promptIdentity';
+import { getCachedUserDisplayNameSync, resolveUserDisplayName } from '../../../brand/common/userDisplayName';
 import { ConfigKey, IConfigurationService } from '../../../platform/configuration/common/configurationService';
 import { ServicesAccessor } from '../../../util/vs/platform/instantiation/common/instantiation';
 
@@ -30,13 +31,29 @@ export function getAdditionalWelcomeMessage(accessor: ServicesAccessor): vscode.
 
 	// Brand-specific personalized welcome
 	if (brandConfig.features.personalizedWelcome) {
+		let userHandle: string | undefined;
+		if (brandConfig.features.personalizedUserGreeting) {
+			// fast synchronous attempt (cache or existing auth session)
+			userHandle = getCachedUserDisplayNameSync(accessor);
+			// fire & forget async refinement; we cannot mutate the already-returned MarkdownString easily
+			// but future calls (e.g. opening a new chat) will use the cached resolved value
+			// Minimal diff strategy: avoid introducing events or reactive updates here.
+			void resolveUserDisplayName(accessor);
+		}
 		const agentName = agentNameForPrompts();
 		segments.push(
-			vscode.l10n.t(
-				`Welcome to {0}! I'm {1}, your in-editor AI pair programmer. Open or select code to give me context, then ask for help fixing bugs, generating tests, refactoring, or explaining code. Use follow-up questions to iterate.`,
-				brandConfig.name,
-				agentName
-			)
+			userHandle
+				? vscode.l10n.t(
+					`Welcome back, {0}!\n\n This is {1} in {2}, your in-editor AI pair programmer. Select code for context, then ask for help fixing bugs, generating tests, refactoring, or explaining code. Use follow-up questions to iterate.`,
+					userHandle,
+					agentName,
+					brandConfig.name,
+				)
+				: vscode.l10n.t(
+					`Welcome to {0}! I'm {1}, your in-editor AI pair programmer. Open or select code to give me context, then ask for help fixing bugs, generating tests, refactoring, or explaining code. Use follow-up questions to iterate.`,
+					brandConfig.name,
+					agentName
+				)
 		);
 		segments.push(
 			vscode.l10n.t(

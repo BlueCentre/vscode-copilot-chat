@@ -95,6 +95,7 @@ The script will (optionally) rebase or merge, audit branding, run tests (with fl
 | `MAINT_AUTO_PUSH=1` | Push auto-commit to remote (defaults to `origin` current branch). |
 | `MAINT_PUSH_REMOTE=origin` | Remote to push to. |
 | `MAINT_PUSH_BRANCH=<name>` | Target branch (defaults to current). |
+| `features.personalizedUserGreeting` (brandConfig) | Adds "Welcome back, \<user\>" greeting when an authenticated handle is cached. |
 
 Existing flags (`MAINT_CLEAN_INSTALL`, `MAINT_ALLOW_ENGINE_MISMATCH`, `MAINT_SKIP_TESTS`, `MAINT_TOLERATE_TEST_FLAKE`) continue to apply.
 
@@ -222,6 +223,10 @@ All maintenance steps (including optional upstream sync) can be executed via `sc
 | `MAINT_AUTO_REBASE=1` | Enable automated upstream sync (rebase default). |
 | `MAINT_REBASE_STRATEGY=merge` | Use merge strategy. |
 | `MAINT_UPSTREAM_BRANCH=upstream/main` | Upstream ref. |
+| `MAINT_PRE_SYNC_AUTOCOMMIT=1` | Create a commit with all current changes before sync. |
+| `MAINT_PRE_SYNC_COMMIT_MESSAGE` | Message for the pre-sync commit. |
+| `MAINT_GIT_NO_VERIFY=1` | Add `--no-verify` to maintenance-created commits. |
+| `MAINT_FALLBACK_TO_MERGE=1` | If rebase fails, attempt a merge fallback. |
 | `MAINT_ALLOW_DIRTY=1` | Proceed with dirty tree. |
 | `MAINT_STASH_DIRTY=1` | Auto stash/pop around sync. |
 | `MAINT_TOLERATE_REBASE_CONFLICT=1` | Treat conflicts as non-fatal. |

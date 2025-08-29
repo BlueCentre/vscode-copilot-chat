@@ -9,6 +9,7 @@
 export interface IBrandFeatures {
 	readonly personalizedWelcome: boolean;
 	readonly useAgentName: boolean; // swap "GitHub Copilot" => custom agent name in prompts
+	readonly personalizedUserGreeting: boolean; // show user's authenticated handle in welcome if available
 }
 
 export interface IBrandConfig {
@@ -25,6 +26,7 @@ export const brandConfig: IBrandConfig = {
 	features: {
 		personalizedWelcome: true,
 		useAgentName: true,
+		personalizedUserGreeting: true,
 	},
 };
 

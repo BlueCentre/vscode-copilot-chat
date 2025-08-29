@@ -1,3 +1,6 @@
+# Legacy removed welcome provider tests
+test/inline/welcomeMessageProvider.spec.ts
+test/inline/test/welcomeMessageProviderShim.ts
 node_modules
 dist
 coverage
