@@ -43,7 +43,11 @@ describe('welcomeMessageProvider personalized greeting', () => {
 		// Try prompts section when enabled
 		const text = md?.value || md?.toString() || '';
 		expect(text).toContain('Try prompts:');
-		expect(text).toContain('Explain the architecture of this repository');
+		const expectedQuery = 'Explain the architecture of this repository';
+		expect(text).toContain(expectedQuery);
+		const expectedArgs = { query: expectedQuery, isPartialQuery: false };
+		const expectedCommandPart = `command:workbench.action.chat.open?${encodeURIComponent(JSON.stringify(expectedArgs))}`;
+		expect(text).toContain(expectedCommandPart);
 	});
 
 	it('falls back to generic when no user', () => {
