@@ -51,19 +51,53 @@ if (process.env.MAINT_ENSURE_MERGE_DRIVER === '1') {
 	try {
 		const fs = require('fs');
 		const path = require('path');
+		const crypto = require('crypto');
 		const driverDir = path.join(ROOT, '.git', 'merge-drivers');
 		if (!existsSync(driverDir)) { fs.mkdirSync(driverDir, { recursive: true }); }
-		const driverFile = path.join(driverDir, 'packagejsonbrand.sh');
-		const driverSource = `#!/usr/bin/env bash\nset -euo pipefail\nBASE=\"$1\"\nLOCAL=\"$2\"\nREMOTE=\"$3\"\nRESULT=\"$4\"\nexport BASE LOCAL REMOTE RESULT\nnode - <<'EOF'\nconst fs=require('fs');\nfunction read(p){try{return JSON.parse(fs.readFileSync(p,'utf8'));}catch{return {}}}\nconst ours=read(process.env.LOCAL);const theirs=read(process.env.REMOTE);\nconst merged={...theirs};\nfor (const sect of ['dependencies','devDependencies','optionalDependencies','peerDependencies']) { if (ours[sect]) { merged[sect]=merged[sect]||{}; for (const [k,v] of Object.entries(ours[sect])) { if (!(k in merged[sect])) merged[sect][k]=v; } } }\ndelete merged.displayName; delete merged.icon;\nfs.writeFileSync(process.env.RESULT, JSON.stringify(merged,null,'\t')+'\n');\nEOF\n`;
-		fs.writeFileSync(driverFile, driverSource, { mode: 0o755 });
+		const jsFile = path.join(driverDir, 'packagejsonbrand.js');
+		const shFile = path.join(driverDir, 'packagejsonbrand.sh');
+		const jsSource = `// Auto-generated branded package.json merge driver (idempotent)\n` +
+			`const fs=require('fs');\n` +
+			`function safeRead(p){try{return JSON.parse(fs.readFileSync(p,'utf8'));}catch{return {}}}\n` +
+			`const basePath=process.argv[2]; // unused algorithmically today\n` +
+			`const localPath=process.argv[3];\n` +
+			`const remotePath=process.argv[4];\n` +
+			`const resultPath=process.argv[5];\n` +
+			`const local=safeRead(localPath);\n` +
+			`const remote=safeRead(remotePath); // treat remote/theirs as authoritative starting point\n` +
+			`const merged={...remote};\n` +
+			`for (const sect of ['dependencies','devDependencies','optionalDependencies','peerDependencies']) {\n` +
+			`  if (local[sect]) { merged[sect]=merged[sect]||{}; for (const [k,v] of Object.entries(local[sect])) { if (!(k in merged[sect])) { merged[sect][k]=v; } } }\n` +
+			`}\n` +
+			`// Remove branding overlay fields so overlay re-applies deterministically after merge\n` +
+			`delete merged.displayName; delete merged.icon;\n` +
+			`fs.writeFileSync(resultPath, JSON.stringify(merged, null, '\t') + '\n');\n`;
+		const shSource = `#!/usr/bin/env bash\nset -euo pipefail\n# Args: %O %A %B %A (BASE OURS THEIRS RESULT) per git merge-driver invocation\nnode "${jsFile}" "$1" "$2" "$3" "$4"\n`;
+		function writeIfChanged(pathName, content, mode) {
+			let write = true;
+			if (existsSync(pathName)) {
+				const current = fs.readFileSync(pathName, 'utf8');
+				const same = crypto.createHash('sha256').update(current).digest('hex') === crypto.createHash('sha256').update(content).digest('hex');
+				write = !same;
+			}
+			if (write) {
+				fs.writeFileSync(pathName, content, { mode });
+				console.log(`[maint] Wrote merge driver file ${path.basename(pathName)}`);
+			} else {
+				console.log(`[maint] Merge driver file ${path.basename(pathName)} unchanged`);
+			}
+		}
+		writeIfChanged(jsFile, jsSource, 0o644);
+		writeIfChanged(shFile, shSource, 0o755);
 		const driverCheck = run('git', ['config', '--get', 'merge.packagejsonbrand.driver'], { print: false });
-		const desiredCmd = `bash ${driverFile} %O %A %B %A`;
+		// Git passes %O %A %B %A -> we map to BASE LOCAL REMOTE RESULT inside wrapper; base currently unused.
+		const desiredCmd = `bash ${shFile} %O %A %B %A`;
 		if (driverCheck.status !== 0 || driverCheck.stdout.trim() !== desiredCmd) {
 			run('git', ['config', 'merge.packagejsonbrand.name', 'Branded package.json merge']);
 			run('git', ['config', 'merge.packagejsonbrand.driver', desiredCmd]);
 			console.log('[maint] Registered/updated merge driver to internal .git path');
 		} else {
-			console.log('[maint] Merge driver already up to date');
+			console.log('[maint] Merge driver already registered');
 		}
 		const infoAttrPath = path.join(ROOT, '.git', 'info', 'attributes');
 		const existing = existsSync(infoAttrPath) ? readFileSync(infoAttrPath, 'utf-8') : '';
