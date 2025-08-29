@@ -43,6 +43,42 @@ function section(title) {
 
 const summary = { steps: {}, issues: [] };
 
+// (Optional) Ensure merge driver registration & attributes for package.json branding.
+// We install the driver script inside .git so it exists even when the worktree rewinds to commits
+// created before the driver was added to the repository, preventing "No such file" errors.
+if (process.env.MAINT_ENSURE_MERGE_DRIVER === '1') {
+	section('Ensure merge driver');
+	try {
+		const fs = require('fs');
+		const path = require('path');
+		const driverDir = path.join(ROOT, '.git', 'merge-drivers');
+		if (!existsSync(driverDir)) { fs.mkdirSync(driverDir, { recursive: true }); }
+		const driverFile = path.join(driverDir, 'packagejsonbrand.sh');
+		const driverSource = `#!/usr/bin/env bash\nset -euo pipefail\nBASE=\"$1\"\nLOCAL=\"$2\"\nREMOTE=\"$3\"\nRESULT=\"$4\"\nexport BASE LOCAL REMOTE RESULT\nnode - <<'EOF'\nconst fs=require('fs');\nfunction read(p){try{return JSON.parse(fs.readFileSync(p,'utf8'));}catch{return {}}}\nconst ours=read(process.env.LOCAL);const theirs=read(process.env.REMOTE);\nconst merged={...theirs};\nfor (const sect of ['dependencies','devDependencies','optionalDependencies','peerDependencies']) { if (ours[sect]) { merged[sect]=merged[sect]||{}; for (const [k,v] of Object.entries(ours[sect])) { if (!(k in merged[sect])) merged[sect][k]=v; } } }\ndelete merged.displayName; delete merged.icon;\nfs.writeFileSync(process.env.RESULT, JSON.stringify(merged,null,'\t')+'\n');\nEOF\n`;
+		fs.writeFileSync(driverFile, driverSource, { mode: 0o755 });
+		const driverCheck = run('git', ['config', '--get', 'merge.packagejsonbrand.driver'], { print: false });
+		const desiredCmd = `bash ${driverFile} %O %A %B %A`;
+		if (driverCheck.status !== 0 || driverCheck.stdout.trim() !== desiredCmd) {
+			run('git', ['config', 'merge.packagejsonbrand.name', 'Branded package.json merge']);
+			run('git', ['config', 'merge.packagejsonbrand.driver', desiredCmd]);
+			console.log('[maint] Registered/updated merge driver to internal .git path');
+		} else {
+			console.log('[maint] Merge driver already up to date');
+		}
+		const infoAttrPath = path.join(ROOT, '.git', 'info', 'attributes');
+		const existing = existsSync(infoAttrPath) ? readFileSync(infoAttrPath, 'utf-8') : '';
+		if (!/package\.json\s+merge=packagejsonbrand/.test(existing)) {
+			fs.writeFileSync(infoAttrPath, existing + (existing.endsWith('\n') || existing.length === 0 ? '' : '\n') + 'package.json merge=packagejsonbrand\n');
+			console.log('[maint] Injected package.json merge attribute into .git/info/attributes');
+		} else {
+			console.log('[maint] Attribute rule already present');
+		}
+	} catch (e) {
+		console.warn('[maint] Merge driver ensure failed:', e.message);
+		summary.issues.push('Merge driver ensure failed');
+	}
+}
+
 // 1. Fetch upstream & divergence report
 section('Git fetch upstream');
 const fetch = run('git', ['fetch', 'upstream']);
@@ -118,12 +154,30 @@ if (process.env.MAINT_AUTO_REBASE === '1') {
 		if (strategy === 'merge') {
 			result = run('git', ['merge', '--no-edit', upstreamRef]);
 		} else {
-			// default to rebase
-			result = run('git', ['rebase', upstreamRef]);
+			// default to rebase (ensure merge backend so merge drivers like packagejsonbrand execute)
+			const rebaseBackend = process.env.MAINT_REBASE_BACKEND || 'merge';
+			if (rebaseBackend) {
+				result = run('git', ['-c', `rebase.backend=${rebaseBackend}`, 'rebase', upstreamRef]);
+			} else {
+				result = run('git', ['rebase', upstreamRef]);
+			}
 		}
 		if (result.status === 0) {
 			autoSync.performed = true;
 			autoSync.result = 'ok';
+			// Re-apply manifest overlay if custom merge driver stripped branding fields
+			try {
+				const pkgPath = join(ROOT, 'package.json');
+				const pkgJson = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+				if (!pkgJson.displayName || !pkgJson.displayName.startsWith('SWE Agent')) {
+					console.log('[maint] Re-applying manifest branding overlay after sync.');
+					const overlayRes = run('node', ['script/brand/applyManifestOverlay.cjs']);
+					autoSync.reappliedOverlay = overlayRes.status === 0 ? 'ok' : 'error';
+				}
+			} catch (e) {
+				console.warn('[maint] Failed to re-apply manifest overlay automatically:', e.message);
+				autoSync.reappliedOverlay = 'failed';
+			}
 			// Update divergence after successful sync
 			const post = run('git', ['rev-list', '--left-right', '--count', `${upstreamRef}...HEAD`], { print: false });
 			if (post.status === 0) {
@@ -132,6 +186,62 @@ if (process.env.MAINT_AUTO_REBASE === '1') {
 				console.log(`Post-sync divergence: behind ${pBehind}, ahead ${pAhead}`);
 			}
 		} else {
+			// Attempt auto-resolution for package.json conflicts before fallback/abort using index stages
+			if (process.env.MAINT_AUTO_RESOLVE_PACKAGE_JSON === '1') {
+				try {
+					const conflictFilesEarly = run('git', ['diff', '--name-only', '--diff-filter=U'], { print: false }).stdout.trim().split('\n').filter(Boolean);
+					if (conflictFilesEarly.includes('package.json')) {
+						console.log('[maint] Auto-resolving package.json conflict (index stages)');
+						const fs = require('fs');
+						function readStage(ref) { const r = run('git', ['show', ref], { print: false }); return r.status === 0 ? r.stdout : '{}'; }
+						const oursContent = readStage(':2:package.json');
+						const theirsContent = readStage(':3:package.json');
+						try {
+							const oursObj = JSON.parse(oursContent || '{}');
+							const theirsObj = JSON.parse(theirsContent || '{}');
+							const merged = { ...theirsObj };
+							for (const sect of ['dependencies','devDependencies','optionalDependencies','peerDependencies']) {
+								if (oursObj[sect]) {
+									merged[sect] = merged[sect] || {};
+									for (const [k, v] of Object.entries(oursObj[sect])) {
+										if (!(k in merged[sect])) {
+											merged[sect][k] = v;
+										}
+									}
+								}
+							}
+							delete merged.displayName; delete merged.icon;
+							fs.writeFileSync(join(ROOT, 'package.json'), JSON.stringify(merged, null, '\t') + '\n');
+							const add = run('git', ['add', 'package.json']);
+							if (add.status === 0) {
+								const cont = run('git', ['rebase', '--continue']);
+								if (cont.status === 0) {
+									autoSync.performed = true;
+									autoSync.result = 'ok';
+									console.log('[maint] package.json conflict auto-resolved (inline) and rebase continued.');
+									const post = run('git', ['rev-list', '--left-right', '--count', `${upstreamRef}...HEAD`], { print: false });
+									if (post.status === 0) {
+										const [pb, pa] = post.stdout.trim().split('\t').map(s => parseInt(s, 10));
+										autoSync.postDivergence = { behind: pb, ahead: pa };
+									}
+									try {
+										const pkgPath = join(ROOT, 'package.json');
+										const pkgJson = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+										if (!pkgJson.displayName || !pkgJson.displayName.startsWith('SWE Agent')) {
+											console.log('[maint] Re-applying manifest overlay after inline auto-resolution.');
+											run('node', ['script/brand/applyManifestOverlay.cjs']);
+										}
+									} catch {}
+								}
+							}
+						} catch (e) {
+							console.warn('[maint] Inline auto-merge failed:', e.message);
+						}
+					}
+				} catch (e) {
+					console.warn('[maint] package.json auto-resolution failed:', e.message);
+				}
+			}
 			// fallback to merge if enabled and strategy was rebase
 			if (strategy === 'rebase' && fallbackToMerge) {
 				console.warn('[maint] Rebase failed; attempting fallback merge (MAINT_FALLBACK_TO_MERGE=1)');
