@@ -1,7 +1,7 @@
 {
 	"name": "copilot-chat",
-	"displayName": "GitHub Copilot Chat",
-	"description": "AI chat features powered by Copilot",
+	"displayName": "SWE Agent Chat",
+	"description": "AI chat features powered by SWE Agent",
 	"version": "0.31.0",
 	"build": "1",
 	"internalAIKey": "1058ec22-3c95-4951-8443-f26c1f325911",
@@ -21,7 +21,7 @@
 		"url": "https://github.com/microsoft/vscode/issues"
 	},
 	"qna": "https://github.com/github-community/community/discussions/categories/copilot",
-	"icon": "assets/copilot.png",
+	"icon": "assets/agent.png",
 	"pricing": "Trial",
 	"engines": {
 		"vscode": "^1.104.0-20250828",
@@ -3842,6 +3842,9 @@
 		"prepare": "husky",
 		"vscode-dts:dev": "node node_modules/@vscode/dts/index.js dev && mv vscode.proposed.*.ts src/extension",
 		"vscode-dts:main": "node node_modules/@vscode/dts/index.js main && mv vscode.d.ts src/extension",
+		"brand:manifest": "node script/brand/applyManifestOverlay.cjs",
+		"prebuild": "npm run brand:manifest",
+		"precompile": "npm run brand:manifest",
 		"build": "tsx .esbuild.ts",
 		"compile": "tsx .esbuild.ts --dev",
 		"watch": "npm-run-all -p watch:*",
@@ -3873,7 +3876,8 @@
 		"setup:dotnet:win32": "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command \"Invoke-WebRequest -Uri https://raw.githubusercontent.com/dotnet/install-scripts/main/src/dotnet-install.ps1 -OutFile dotnet-install.ps1; ./dotnet-install.ps1 -channel 10.0; Remove-Item dotnet-install.ps1\"",
 		"create_venv": "tsx script/setup/createVenv.mts",
 		"package": "vsce package",
-		"web": "vscode-test-web --headless --extensionDevelopmentPath=. ."
+		"web": "vscode-test-web --headless --extensionDevelopmentPath=. .",
+		"brand:maintain": "node script/brand/maintenance.cjs"
 	},
 	"devDependencies": {
 		"@azure/identity": "4.9.1",
