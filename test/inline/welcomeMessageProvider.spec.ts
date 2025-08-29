@@ -34,12 +34,20 @@ describe('welcomeMessageProvider personalized greeting', () => {
 			name: 'TestBrand',
 			agentName: 'TestAgent',
 			icon: 'assets/icon.png',
-			features: { personalizedWelcome: true, useAgentName: true, personalizedUserGreeting: true }
+			features: { personalizedWelcome: true, useAgentName: true, personalizedUserGreeting: true, welcomeTryPrompts: true }
 		} as any);
 		vi.spyOn(userNameMod, 'getCachedUserDisplayNameSync').mockReturnValue('octocat');
 		const md = getAdditionalWelcomeMessage(mockAccessor);
 		expect(md?.value || md?.toString() || '').toContain('octocat');
 		expect(md?.value || md?.toString() || '').toContain('Welcome back');
+		// Try prompts section when enabled
+		const text = md?.value || md?.toString() || '';
+		expect(text).toContain('Try prompts:');
+		const expectedQuery = 'Explain the architecture of this repository';
+		expect(text).toContain(expectedQuery);
+		const expectedArgs = { query: expectedQuery, isPartialQuery: false };
+		const expectedCommandPart = `command:workbench.action.chat.open?${encodeURIComponent(JSON.stringify(expectedArgs))}`;
+		expect(text).toContain(expectedCommandPart);
 	});
 
 	it('falls back to generic when no user', () => {
@@ -61,7 +69,7 @@ describe('welcomeMessageProvider personalized greeting', () => {
 			name: 'TestBrand',
 			agentName: 'TestAgent',
 			icon: 'assets/icon.png',
-			features: { personalizedWelcome: false, useAgentName: true, personalizedUserGreeting: false }
+			features: { personalizedWelcome: false, useAgentName: true, personalizedUserGreeting: false, welcomeTryPrompts: false }
 		} as any);
 		const md = getAdditionalWelcomeMessage(mockAccessor);
 		expect(md).toBeUndefined();
