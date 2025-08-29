@@ -200,7 +200,7 @@ if (process.env.MAINT_AUTO_REBASE === '1') {
 							const oursObj = JSON.parse(oursContent || '{}');
 							const theirsObj = JSON.parse(theirsContent || '{}');
 							const merged = { ...theirsObj };
-							for (const sect of ['dependencies','devDependencies','optionalDependencies','peerDependencies']) {
+							for (const sect of ['dependencies', 'devDependencies', 'optionalDependencies', 'peerDependencies']) {
 								if (oursObj[sect]) {
 									merged[sect] = merged[sect] || {};
 									for (const [k, v] of Object.entries(oursObj[sect])) {
@@ -231,7 +231,7 @@ if (process.env.MAINT_AUTO_REBASE === '1') {
 											console.log('[maint] Re-applying manifest overlay after inline auto-resolution.');
 											run('node', ['script/brand/applyManifestOverlay.cjs']);
 										}
-									} catch {}
+									} catch { }
 								}
 							}
 						} catch (e) {
