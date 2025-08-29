@@ -2248,6 +2248,16 @@
 						"markdownDescription": "%github.copilot.nextEditSuggestions.fixes%",
 						"scope": "language-overridable"
 					},
+					"github.copilot.nextEditSuggestions.allowWhitespaceOnlyChanges": {
+						"type": "boolean",
+						"default": true,
+						"tags": [
+							"nextEditSuggestions",
+							"onExp"
+						],
+						"markdownDescription": "%github.copilot.nextEditSuggestions.allowWhitespaceOnlyChanges%",
+						"scope": "language-overridable"
+					},
 					"github.copilot.chat.agent.autoFix": {
 						"type": "boolean",
 						"default": true,
@@ -2912,14 +2922,6 @@
 						},
 						"markdownDescription": "Configure custom OpenAI-compatible models. Each key should be a unique model ID, and the value should be an object with model configuration including name, url, toolCalling, vision, maxInputTokens, and maxOutputTokens properties."
 					},
-					"github.copilot.chat.enableRetryAfterFilteredResponse": {
-						"type": "boolean",
-						"default": true,
-						"tags": [
-							"experimental"
-						],
-						"description": "%github.copilot.config.retryAfterFilteredResponse.enabled%"
-					},
 					"github.copilot.chat.alternateGptPrompt.enabled": {
 						"type": "boolean",
 						"default": false,
@@ -2935,6 +2937,14 @@
 							"experimental"
 						],
 						"description": "%github.copilot.config.gpt5AlternatePrompt%"
+					},
+					"github.copilot.chat.grokCodeAlternatePrompt": {
+						"type": "string",
+						"default": "default",
+						"tags": [
+							"experimental"
+						],
+						"description": "%github.copilot.config.grokCodeAlternatePrompt%"
 					}
 				}
 			}
@@ -3995,5 +4005,7 @@
 		"@aminya/node-gyp-build": "npm:node-gyp-build@4.8.1",
 		"string_decoder": "npm:string_decoder@1.2.0",
 		"node-gyp": "npm:node-gyp@10.3.1"
-	}
+	},
+	"displayName": "SWE Agent Chat",
+	"icon": "assets/agent.png"
 }

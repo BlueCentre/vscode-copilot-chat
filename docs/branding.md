@@ -75,7 +75,14 @@ If full white‑labeling is required later, introduce additional flags (e.g. `pr
 Routine upstream integration is now automated; invoke:
 
 ```bash
-MAINT_AUTO_REBASE=1 MAINT_ALLOW_ENGINE_MISMATCH=1 MAINT_TOLERATE_TEST_FLAKE=1 npm run brand:maintain
+MAINT_PRE_SYNC_AUTOCOMMIT=1 \
+MAINT_ENSURE_MERGE_DRIVER=1 \
+MAINT_AUTO_REBASE=1 \
+MAINT_AUTO_RESOLVE_PACKAGE_JSON=1 \
+MAINT_ALLOW_ENGINE_MISMATCH=1 \
+MAINT_TOLERATE_TEST_FLAKE=1 \
+MAINT_FALLBACK_TO_MERGE=1 \
+npm run brand:maintain
 ```
 
 The script will (optionally) rebase or merge, audit branding, run tests (with flake handling), run a strict namespace compile, and optionally commit/push.
@@ -99,6 +106,12 @@ The script will (optionally) rebase or merge, audit branding, run tests (with fl
 | `features.welcomeTryPrompts` (brandConfig) | Appends a "Try prompts" section with three clickable starter queries in the welcome message. |
 
 Existing flags (`MAINT_CLEAN_INSTALL`, `MAINT_ALLOW_ENGINE_MISMATCH`, `MAINT_SKIP_TESTS`, `MAINT_TOLERATE_TEST_FLAKE`) continue to apply.
+Additional test infrastructure flags introduced by fallback logic:
+
+| Variable | Effect |
+|----------|--------|
+| `MAINT_TEST_POOL=<pool>` | Force initial Vitest pool (`forks`, `threads`, `vmThreads`). Default `forks`. |
+| `MAINT_TEST_DISABLE_FALLBACK=1` | Disable automatic fallback to alternate pool on infrastructure failure (IPC channel closed / segfault). |
 
 ### Minimal Hands-Off Flow
 
@@ -214,6 +227,7 @@ All maintenance steps (including optional upstream sync) can be executed via `sc
 | 4 | Compile | Manifest overlay, build artifacts. |
 | 5 | Brand audit | Detects new stray "GitHub Copilot" literals. |
 | 6 | Unit tests | Retry on Tinypool flake; skip/tolerate via flags. |
+| 6a | Test pool fallback | On infrastructure crash attempts alternate pool unless disabled. |
 | 7 | Namespace strict compile | Smoke test namespacing mode. |
 | 8 | Auto commit/push | If `MAINT_AUTO_COMMIT=1` (and `MAINT_AUTO_PUSH=1`). |
 | 9 | JSON summary | Machine-readable results. |
@@ -241,6 +255,8 @@ All maintenance steps (including optional upstream sync) can be executed via `sc
 | `MAINT_ALLOW_ENGINE_MISMATCH=1` | Ignore engine mismatch. |
 | `MAINT_SKIP_TESTS=1` | Skip tests. |
 | `MAINT_TOLERATE_TEST_FLAKE=1` | Tolerate Tinypool crash. |
+| `MAINT_TEST_POOL=<pool>` | Override initial Vitest worker pool (`forks`, `threads`, `vmThreads`). |
+| `MAINT_TEST_DISABLE_FALLBACK=1` | Prevent automatic fallback to alternate pool on infrastructure failure. |
 | `COPILOT_FORK_NAMESPACE_STRICT=1` | Force namespacing (used in step 7). |
 
 ### Typical Hands-Off Sync

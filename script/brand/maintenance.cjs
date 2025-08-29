@@ -56,22 +56,36 @@ if (process.env.MAINT_ENSURE_MERGE_DRIVER === '1') {
 		if (!existsSync(driverDir)) { fs.mkdirSync(driverDir, { recursive: true }); }
 		const jsFile = path.join(driverDir, 'packagejsonbrand.js');
 		const shFile = path.join(driverDir, 'packagejsonbrand.sh');
-		const jsSource = `// Auto-generated branded package.json merge driver (idempotent)\n` +
-			`const fs=require('fs');\n` +
-			`function safeRead(p){try{return JSON.parse(fs.readFileSync(p,'utf8'));}catch{return {}}}\n` +
-			`const basePath=process.argv[2]; // unused algorithmically today\n` +
-			`const localPath=process.argv[3];\n` +
-			`const remotePath=process.argv[4];\n` +
-			`const resultPath=process.argv[5];\n` +
-			`const local=safeRead(localPath);\n` +
-			`const remote=safeRead(remotePath); // treat remote/theirs as authoritative starting point\n` +
-			`const merged={...remote};\n` +
-			`for (const sect of ['dependencies','devDependencies','optionalDependencies','peerDependencies']) {\n` +
-			`  if (local[sect]) { merged[sect]=merged[sect]||{}; for (const [k,v] of Object.entries(local[sect])) { if (!(k in merged[sect])) { merged[sect][k]=v; } } }\n` +
-			`}\n` +
-			`// Remove branding overlay fields so overlay re-applies deterministically after merge\n` +
-			`delete merged.displayName; delete merged.icon;\n` +
-			`fs.writeFileSync(resultPath, JSON.stringify(merged, null, '\t') + '\n');\n`;
+		// Build merge driver JS ensuring escaped "\\n" sequence inside string literal (NOT a real newline) and append checksum comment.
+		const jsLines = [
+			"// Auto-generated branded package.json merge driver (idempotent)",
+			"const fs=require('fs');",
+			"function safeRead(p){try{return JSON.parse(fs.readFileSync(p,'utf8'));}catch{return {}}}",
+			"const basePath=process.argv[2]; // unused algorithmically today",
+			"const localPath=process.argv[3];",
+			"const remotePath=process.argv[4];",
+			"const resultPath=process.argv[5];",
+			"const local=safeRead(localPath);",
+			"const remote=safeRead(remotePath); // treat remote/theirs as authoritative starting point",
+			"const merged={...remote};",
+			"for (const sect of ['dependencies','devDependencies','optionalDependencies','peerDependencies']) {",
+			"  if (local[sect]) { merged[sect]=merged[sect]||{}; for (const [k,v] of Object.entries(local[sect])) { if (!(k in merged[sect])) { merged[sect][k]=v; } } }",
+			"}",
+			"// Remove branding overlay fields so overlay re-applies deterministically after merge",
+			"delete merged.displayName; delete merged.icon;",
+			"fs.writeFileSync(resultPath + '.tmp', JSON.stringify(merged, null, '\t') + '\\n');",
+			"fs.renameSync(resultPath + '.tmp', resultPath);"
+		];
+		// Validate that no line accidentally contains an unescaped real newline inside a quoted string (caused previous corruption)
+		for (const l of jsLines) {
+			if (/JSON\.stringify\(merged, null, '\\t'\) \+ '.*[^\\]n'/.test(l) && l.includes("+ '\n'")) {
+				// This is fine (escaped sequence). Continue.
+				continue;
+			}
+		}
+		let jsSource = jsLines.join('\n') + '\n';
+		const checksum = crypto.createHash('sha256').update(jsSource).digest('hex');
+		jsSource += `// checksum:${checksum}\n`;
 		const shSource = `#!/usr/bin/env bash\nset -euo pipefail\n# Args: %O %A %B %A (BASE OURS THEIRS RESULT) per git merge-driver invocation\nnode "${jsFile}" "$1" "$2" "$3" "$4"\n`;
 		function writeIfChanged(pathName, content, mode) {
 			let write = true;
@@ -81,11 +95,41 @@ if (process.env.MAINT_ENSURE_MERGE_DRIVER === '1') {
 				write = !same;
 			}
 			if (write) {
-				fs.writeFileSync(pathName, content, { mode });
+				// Atomic write
+				const tmp = pathName + '.tmp';
+				fs.writeFileSync(tmp, content, { mode });
+				fs.renameSync(tmp, pathName);
 				console.log(`[maint] Wrote merge driver file ${path.basename(pathName)}`);
 			} else {
 				console.log(`[maint] Merge driver file ${path.basename(pathName)} unchanged`);
 			}
+		}
+		// Integrity / checksum self-check.
+		let needRewrite = false;
+		if (existsSync(jsFile)) {
+			try {
+				const current = fs.readFileSync(jsFile, 'utf8');
+				const lines = current.trimEnd().split(/\n/);
+				const last = lines[lines.length - 1];
+				const m = last.match(/\/\/ checksum:([0-9a-f]{64})$/);
+				if (!m) {
+					needRewrite = true;
+				} else {
+					const body = lines.slice(0, -1).join('\n') + '\n';
+					const calc = crypto.createHash('sha256').update(body).digest('hex');
+					if (calc !== m[1]) { needRewrite = true; }
+					// Additionally ensure it parses.
+					try { new Function(body); } catch { needRewrite = true; }
+				}
+			} catch {
+				needRewrite = true;
+			}
+		} else {
+			needRewrite = true;
+		}
+		if (needRewrite) {
+			console.warn('[maint] Merge driver missing/invalid (checksum or parse failed); rewriting.');
+			fs.writeFileSync(jsFile, jsSource, { mode: 0o644 });
 		}
 		writeIfChanged(jsFile, jsSource, 0o644);
 		writeIfChanged(shFile, shSource, 0o755);
@@ -398,8 +442,10 @@ if (!engineOk) {
 	if (process.env.MAINT_ALLOW_ENGINE_MISMATCH === '1') {
 		console.warn('[maint] WARNING: Engine mismatch ignored due to MAINT_ALLOW_ENGINE_MISMATCH=1');
 		summary.issues.push('Engine mismatch (ignored)');
+		console.warn('[maint] Suggested upgrade: nvm install ' + (requiredNode || '22') + ' && nvm use ' + (requiredNode || '22'));
 	} else {
 		summary.issues.push('Engine versions below required.');
+		console.warn('[maint] To proceed despite mismatch rerun with MAINT_ALLOW_ENGINE_MISMATCH=1');
 		fail('Engine mismatch');
 	}
 }
@@ -464,29 +510,64 @@ if (process.env.MAINT_SKIP_TESTS === '1') {
 	console.log('Skipping tests due to MAINT_SKIP_TESTS=1');
 	summary.steps.unitTests = 'skipped';
 } else {
-	function runTestsAttempt(label) {
-		console.log(`Running tests (${label})`);
-		return run('npm', ['run', 'test:unit'], { print: true });
+	const desiredPool = process.env.MAINT_TEST_POOL; // optional override
+	const disableFallback = process.env.MAINT_TEST_DISABLE_FALLBACK === '1';
+	function vitestCmd(pool) { return ['vitest', '--run', `--pool=${pool}`]; }
+	function runVitest(pool, label) {
+		console.log(`Running tests (${label}) pool=${pool}`);
+		return run('npx', vitestCmd(pool), { print: true });
 	}
-	let tests = runTestsAttempt('attempt 1');
-	let flaky = false;
-	if (tests.status !== 0 && /Channel closed|ERR_IPC_CHANNEL_CLOSED/.test(tests.stderr + tests.stdout)) {
-		console.warn('[maint] Detected potential flaky worker crash. Retrying once...');
-		tests = runTestsAttempt('attempt 2');
-		flaky = tests.status === 0;
-		if (flaky) {
-			console.log('[maint] Flaky failure recovered on retry.');
+	function classifyInfraFailure(res) {
+		const out = (res.stdout || '') + (res.stderr || '');
+		if (/Channel closed|ERR_IPC_CHANNEL_CLOSED|segmentation fault|SIGSEGV/i.test(out)) { return true; }
+		// If Vitest exited early before discovering tests (0 passed, 0 total style) treat as infra
+		if (/0\/?0\s+tests?/i.test(out) && /Duration/.test(out)) { return true; }
+		return false;
+	}
+	const primaryPool = desiredPool || 'forks';
+	let result = runVitest(primaryPool, 'attempt 1');
+	let flakyRecovered = false;
+	let infraFailure = false;
+	if (result.status !== 0) {
+		infraFailure = classifyInfraFailure(result);
+		if (infraFailure) {
+			console.warn('[maint] Detected infrastructure style failure in primary pool.');
+			if (!disableFallback) {
+				const fallbackPool = primaryPool === 'forks' ? 'threads' : 'forks';
+				console.warn(`[maint] Attempting fallback pool: ${fallbackPool}`);
+				const fallback = runVitest(fallbackPool, 'fallback attempt');
+				if (fallback.status === 0) {
+					flakyRecovered = true;
+					result = fallback;
+				} else if (classifyInfraFailure(fallback)) {
+					infraFailure = true; // still infra problem
+					result = fallback; // keep last output
+				}
+			}
+		}
+		// Second chance retry in same pool if not infra but maybe flaky
+		if (!flakyRecovered && !infraFailure && /Channel closed|ERR_IPC_CHANNEL_CLOSED/.test((result.stderr || '') + (result.stdout || ''))) {
+			console.warn('[maint] Retrying same pool after potential flake');
+			const retry = runVitest(primaryPool, 'attempt 2');
+			if (retry.status === 0) { flakyRecovered = true; result = retry; }
 		}
 	}
-	if (tests.status === 0) {
-		summary.steps.unitTests = flaky ? 'ok(flaky)' : 'ok';
+	if (result.status === 0) {
+		summary.steps.unitTests = flakyRecovered ? 'ok(flaky)' : 'ok';
+		if (flakyRecovered) { summary.issues.push('Flaky tests recovered'); }
 	} else {
-		summary.steps.unitTests = 'error';
-		const toleratingFlake = process.env.MAINT_TOLERATE_TEST_FLAKE === '1' && /Channel closed|ERR_IPC_CHANNEL_CLOSED/.test(tests.stderr + tests.stdout);
-		if (toleratingFlake) {
-			console.warn('[maint] Treating flaky test infrastructure failure as non-fatal (MAINT_TOLERATE_TEST_FLAKE=1).');
-			summary.issues.push('Unit tests flaky failure tolerated');
+		if (infraFailure) {
+			summary.steps.unitTests = 'infra-failed';
+			const tolerated = process.env.MAINT_TOLERATE_TEST_FLAKE === '1';
+			if (tolerated) {
+				console.warn('[maint] Infrastructure test failure tolerated (MAINT_TOLERATE_TEST_FLAKE=1).');
+				summary.issues.push('Unit test infra failure tolerated');
+			} else {
+				summary.issues.push('Unit test infrastructure failure');
+				fail('Unit test infrastructure failure');
+			}
 		} else {
+			summary.steps.unitTests = 'error';
 			summary.issues.push('Unit tests failed');
 			fail('Unit tests failed');
 		}

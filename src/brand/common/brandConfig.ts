@@ -10,7 +10,7 @@ export interface IBrandFeatures {
 	readonly personalizedWelcome: boolean;
 	readonly useAgentName: boolean; // swap "GitHub Copilot" => custom agent name in prompts
 	readonly personalizedUserGreeting: boolean; // show user's authenticated handle in welcome if available
-	readonly welcomeTryPrompts: boolean; // show clickable sample prompts in welcome
+	readonly welcomeTryPrompts: boolean; // show sample clickable prompts section in welcome
 }
 
 export interface IBrandConfig {
@@ -29,7 +29,7 @@ export const brandConfig: IBrandConfig = {
 		useAgentName: true,
 		personalizedUserGreeting: true,
 		welcomeTryPrompts: true,
-	},
+	}
 };
 
 export const getAgentDisplayName = (): string => brandConfig.agentName;

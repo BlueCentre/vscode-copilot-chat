@@ -14,6 +14,7 @@ import { ServicesAccessor } from '../../../util/vs/platform/instantiation/common
 
 export function getAdditionalWelcomeMessage(accessor: ServicesAccessor): vscode.MarkdownString | undefined {
 	const configurationService = accessor.get(IConfigurationService);
+
 	// Collect raw markdown segments and track commands that must be trusted so links are clickable.
 	const segments: string[] = [];
 	const enabledCommands = new Set<string>();
@@ -24,7 +25,7 @@ export function getAdditionalWelcomeMessage(accessor: ServicesAccessor): vscode.
 		enabledCommands.add(openSettingsCommand);
 		const internalSegment = vscode.l10n.t({
 			message: 'If handling customer data, [disable telemetry]({0}).',
-			args: [`command:${openSettingsCommand}?${encodeURIComponent('["telemetry.telemetryLevel"]')}`],
+			args: [`command:${openSettingsCommand}?${encodeURIComponent('[' + '"telemetry.telemetryLevel"' + ']')}`],
 			comment: ["{Locked=']({'}"]
 		});
 		segments.push(internalSegment);
@@ -58,9 +59,7 @@ export function getAdditionalWelcomeMessage(accessor: ServicesAccessor): vscode.
 			)
 		);
 
-		// Try Prompts (sample clickable queries) shown when enabled.
 		if (brandConfig.features.welcomeTryPrompts) {
-			// Define three SWE-focused starter prompts.
 			const tryPrompts = [
 				'Explain the architecture of this repository',
 				'Generate unit tests for the selected function',
