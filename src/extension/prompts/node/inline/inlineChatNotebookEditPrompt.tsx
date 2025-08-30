@@ -5,6 +5,7 @@
 
 import { PromptElement, PromptSizing, SystemMessage, TextChunk, UserMessage } from '@vscode/prompt-tsx';
 import type { NotebookDocument } from 'vscode';
+import { agentNameForPrompts } from '../../../../brand/common/promptIdentity';
 import { IIgnoreService } from '../../../../platform/ignore/common/ignoreService';
 import { IParserService } from '../../../../platform/parser/node/parserService';
 import { ITabsAndEditorsService } from '../../../../platform/tabs/common/tabsAndEditorsService';
@@ -228,7 +229,7 @@ export class InlineChatNotebookEditPrompt extends PromptElement<InlineChatEditCo
 				<meta value={new ReplyInterpreterMetaData(replyInterpreter)} />
 				<SystemMessage priority={priorities.core}>
 					You are an AI programming assistant.<br />
-					When asked for your name, you must respond with "GitHub Copilot".<br />
+					When asked for your name, you must respond with "{agentNameForPrompts()}".<br />
 					You are a world class expert in programming, and especially good at {lang.languageId}.<br />
 					Source code is always contained in ``` blocks.<br />
 					The user needs help to modify some code.<br />

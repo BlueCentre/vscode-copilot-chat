@@ -4,13 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ExtensionContext, LogLevel, OutputChannel, window } from 'vscode';
+import { getAgentDisplayName } from '../../../brand/common/brandConfig';
 import { ILogTarget } from '../common/logService';
 
 export let outputChannel: OutputChannel;
 
 export class NewOutputChannelLogTarget implements ILogTarget {
 
-	private readonly _outputChannel = window.createOutputChannel('GitHub Copilot Chat', { log: true });
+	// Use branded display name while preserving upstream default string literal for minimal merge churn.
+	private readonly _outputChannel = window.createOutputChannel(`${getAgentDisplayName()} Chat`, { log: true });
 
 	constructor(extensionContext: ExtensionContext) {
 		outputChannel = this._outputChannel;

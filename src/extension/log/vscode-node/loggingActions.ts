@@ -57,7 +57,7 @@ export class LoggingActionsContrib {
 		this._context.subscriptions.push(vscode.commands.registerCommand('github.copilot.debug.collectDiagnostics', async () => {
 			const document = await vscode.workspace.openTextDocument({ language: 'markdown' });
 			const editor = await vscode.window.showTextDocument(document);
-			await appendText(editor, `## GitHub Copilot Chat
+			await appendText(editor, `## ${require('../../../brand/common/brandConfig').getAgentDisplayName()} Chat
 
 - Extension Version: ${this.envService.getVersion()} (${this.envService.getBuildType()})
 - VS Code: ${this.envService.getEditorInfo().format()}

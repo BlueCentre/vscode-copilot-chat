@@ -25,6 +25,7 @@ import { IDocumentContext } from '../../prompt/node/documentContext';
 import { EditStrategy } from '../../prompt/node/editGeneration';
 import { EarlyStopping, IIntent, IIntentInvocation, IIntentInvocationContext, IIntentSlashCommandInfo, IResponseProcessorContext, LeadingMarkdownStreaming } from '../../prompt/node/intents';
 import { InsertionStreamingEdits, InsertOrReplaceStreamingEdits, TextPieceClassifiers } from '../../prompt/node/streamingEdits';
+import { CopilotIdentityRules } from '../../prompts/node/base/copilotIdentity';
 import { InstructionMessage } from '../../prompts/node/base/instructionMessage';
 import { PromptRenderer } from '../../prompts/node/base/promptRenderer';
 import { InlineReplyInterpreter } from '../../prompts/node/inline/promptingSummarizedDocument';
@@ -191,7 +192,7 @@ class DocPrompt extends PromptElement<Props> {
 			<>
 				<SystemMessage>
 					You are an AI programming assistant.<br />
-					When asked for your name, you must respond with "GitHub Copilot".<br />
+					<CopilotIdentityRules />
 					You must follow user's requirements carefully.<br />
 					You must follow Microsoft content policies.<br />
 					You must avoid content that violates copyrights.<br />

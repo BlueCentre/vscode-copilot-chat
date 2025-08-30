@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { commands, window } from 'vscode';
+import { getAgentDisplayName } from '../../../brand/common/brandConfig';
 import { IAuthenticationService } from '../../../platform/authentication/common/authentication';
 import { ChatDisabledError, ContactSupportError, EnterpriseManagedError, NotSignedUpError, SubscriptionExpiredError } from '../../../platform/authentication/vscode-node/copilotTokenManager';
 import { SESSION_LOGIN_MESSAGE } from '../../../platform/authentication/vscode-node/session';
@@ -116,7 +117,7 @@ export class ContextKeysContribution extends Disposable {
 			const message =
 				reason === 'GitHubLoginFailed'
 					? SESSION_LOGIN_MESSAGE
-					: `GitHub Copilot could not connect to server. Extension activation failed: "${reason}"`;
+					: `${getAgentDisplayName()} could not connect to server. Extension activation failed: "${reason}"`;
 			this._logService.error(message);
 		}
 
