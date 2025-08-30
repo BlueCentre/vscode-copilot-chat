@@ -5,6 +5,7 @@
 
 import { BasePromptElementProps, PromptElement, PromptSizing, SystemMessage, UserMessage } from '@vscode/prompt-tsx';
 import type * as vscode from 'vscode';
+import { agentNameForPrompts } from '../../../../brand/common/promptIdentity';
 import { TextDocumentSnapshot } from '../../../../platform/editing/common/textDocumentSnapshot';
 import { IIgnoreService } from '../../../../platform/ignore/common/ignoreService';
 import { ILanguageDiagnosticsService, rangeSpanningDiagnostics } from '../../../../platform/languages/common/languageDiagnosticsService';
@@ -122,7 +123,7 @@ export class InlineFixNotebookPrompt extends PromptElement<InlineFixProps, Inlin
 				<meta value={new ReplyInterpreterMetaData(replyInterpreter)} />
 				<SystemMessage priority={priorities.core}>
 					You are an AI programming assistant.<br />
-					When asked for your name, you must respond with "GitHub Copilot".<br />
+					When asked for your name, you must respond with "{agentNameForPrompts()}".<br />
 					You are a world class expert in programming, and especially good at {documentContext.language.languageId}.<br />
 					Source code is always contained in ``` blocks.<br />
 				</SystemMessage>

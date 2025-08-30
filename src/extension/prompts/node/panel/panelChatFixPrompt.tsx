@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { PromptElement, PromptSizing, SystemMessage, UserMessage } from '@vscode/prompt-tsx';
+import { agentNameForPrompts } from '../../../../brand/common/promptIdentity';
 import { ChatLocation } from '../../../../platform/chat/common/commonTypes';
 import { ILanguageDiagnosticsService } from '../../../../platform/languages/common/languageDiagnosticsService';
 import { findDiagnosticForSelectionAndPrompt } from '../../../context/node/resolvers/fixSelection';
@@ -40,7 +41,7 @@ export class PanelChatFixPrompt extends PromptElement<PanelChatFixPromptProps> {
 			<>
 				<SystemMessage priority={1000}>
 					You are an AI programming assistant.<br />
-					When asked for your name, you must respond with "GitHub Copilot".<br />
+					When asked for your name, you must respond with "{agentNameForPrompts()}".<br />
 					Follow the user's requirements carefully & to the letter.<br />
 					<SafetyRules />
 					<br />

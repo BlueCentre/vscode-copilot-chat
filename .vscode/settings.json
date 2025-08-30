@@ -147,5 +147,10 @@
 		"eslint": "warning"
 	},
 	"githubPullRequests.codingAgent.enabled": true,
-	"githubPullRequests.codingAgent.uiIntegration": true
+	"githubPullRequests.codingAgent.uiIntegration": true,
+	"java.jdt.ls.java.home": "/Users/james/.local/share/mise/installs/java/21.0.2",
+	"java.import.gradle.java.home": "/Users/james/.local/share/mise/installs/java/21.0.2",
+	"debug.javascript.defaultRuntimeExecutable": {
+		"pwa-node": "/Users/james/.local/share/mise/shims/node"
+	}
 }

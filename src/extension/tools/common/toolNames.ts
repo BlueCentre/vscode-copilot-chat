@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { mapContributedToolId } from '../../../brand/common/toolNameMap';
 import { cloneAndChange } from '../../../util/vs/base/common/objects';
 
 export enum ToolName {
@@ -109,7 +110,9 @@ for (const [contributedNameKey, contributedName] of Object.entries(ContributedTo
 }
 
 export function getContributedToolName(name: string | ToolName): string | ContributedToolName {
-	return toolNameToContributedToolNames.get(name as ToolName) ?? name;
+	const raw = toolNameToContributedToolNames.get(name as ToolName) ?? name;
+	// Apply branding indirection for exposed contributed tool id without mutating internal maps
+	return typeof raw === 'string' ? mapContributedToolId(raw) : raw;
 }
 
 export function getToolName(name: string | ContributedToolName): string | ToolName {
@@ -118,8 +121,13 @@ export function getToolName(name: string | ContributedToolName): string | ToolNa
 
 export function mapContributedToolNamesInString(str: string): string {
 	contributedToolNameToToolNames.forEach((value, key) => {
-		const re = new RegExp(`\\b${key}\\b`, 'g');
-		str = str.replace(re, value);
+		// Replace both original and mapped brand id forms back to core tool name for parsing
+		const branded = mapContributedToolId(key);
+		const forms = new Set([key, branded]);
+		forms.forEach(form => {
+			const re = new RegExp(`\\b${form}\\b`, 'g');
+			str = str.replace(re, value as unknown as string);
+		});
 	});
 	return str;
 }

@@ -1,7 +1,7 @@
 {
 	"name": "copilot-chat",
-	"displayName": "GitHub Copilot Chat",
-	"description": "AI chat features powered by Copilot",
+	"displayName": "SWE Agent Chat",
+	"description": "AI chat features powered by SWE Agent",
 	"version": "0.31.0",
 	"build": "1",
 	"internalAIKey": "1058ec22-3c95-4951-8443-f26c1f325911",
@@ -21,7 +21,7 @@
 		"url": "https://github.com/microsoft/vscode/issues"
 	},
 	"qna": "https://github.com/github-community/community/discussions/categories/copilot",
-	"icon": "assets/copilot.png",
+	"icon": "assets/agent.png",
 	"pricing": "Trial",
 	"engines": {
 		"vscode": "^1.104.0-20250828",
@@ -1426,7 +1426,6 @@
 				"name": "workspace",
 				"fullName": "Workspace",
 				"description": "%copilot.workspace.description%",
-				"when": "!github.copilot.interactiveSession.disabled",
 				"sampleRequest": "%copilot.workspace.sampleRequest%",
 				"locations": [
 					"panel"
@@ -1541,7 +1540,6 @@
 				"name": "vscode",
 				"fullName": "VS Code",
 				"description": "%copilot.vscode.description%",
-				"when": "!github.copilot.interactiveSession.disabled",
 				"sampleRequest": "%copilot.vscode.sampleRequest%",
 				"locations": [
 					"panel"
@@ -1584,7 +1582,6 @@
 				"name": "terminal",
 				"fullName": "Terminal",
 				"description": "%copilot.terminal.description%",
-				"when": "!github.copilot.interactiveSession.disabled",
 				"sampleRequest": "%copilot.terminal.sampleRequest%",
 				"isDefault": true,
 				"locations": [
@@ -1603,7 +1600,6 @@
 				"name": "terminal",
 				"fullName": "Terminal",
 				"description": "%copilot.terminalPanel.description%",
-				"when": "!github.copilot.interactiveSession.disabled",
 				"sampleRequest": "%copilot.terminal.sampleRequest%",
 				"locations": [
 					"panel"
@@ -3856,6 +3852,9 @@
 		"prepare": "husky",
 		"vscode-dts:dev": "node node_modules/@vscode/dts/index.js dev && mv vscode.proposed.*.ts src/extension",
 		"vscode-dts:main": "node node_modules/@vscode/dts/index.js main && mv vscode.d.ts src/extension",
+		"brand:manifest": "node script/brand/applyManifestOverlay.cjs",
+		"prebuild": "npm run brand:manifest",
+		"precompile": "npm run brand:manifest",
 		"build": "tsx .esbuild.ts",
 		"compile": "tsx .esbuild.ts --dev",
 		"watch": "npm-run-all -p watch:*",
@@ -3888,7 +3887,8 @@
 		"extract-chat-lib": "tsx script/build/extractChatLib.ts",
 		"create_venv": "tsx script/setup/createVenv.mts",
 		"package": "vsce package",
-		"web": "vscode-test-web --headless --extensionDevelopmentPath=. ."
+		"web": "vscode-test-web --headless --extensionDevelopmentPath=. .",
+		"brand:maintain": "node script/brand/maintenance.cjs"
 	},
 	"devDependencies": {
 		"@azure/identity": "4.9.1",
@@ -3936,9 +3936,8 @@
 		"dotenv": "^17.2.0",
 		"electron": "^37.2.1",
 		"esbuild": "^0.25.6",
-		"eslint": "^9.30.0",
+		"eslint": "9.28.0",
 		"eslint-import-resolver-typescript": "^4.4.4",
-		"eslint-plugin-header": "^3.1.1",
 		"eslint-plugin-import": "^2.32.0",
 		"eslint-plugin-jsdoc": "^51.3.4",
 		"eslint-plugin-no-only-tests": "^3.3.0",

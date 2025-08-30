@@ -5,6 +5,8 @@
 
 import * as l10n from '@vscode/l10n';
 import { commands, env, ExtensionContext, ExtensionMode, l10n as vscodeL10n } from 'vscode';
+import { registerBrandArtifacts } from '../../../brand/common/brandHooks';
+import { initializeNamespace } from '../../../brand/common/idNamespace';
 import { isScenarioAutomation } from '../../../platform/env/common/envService';
 import { isProduction } from '../../../platform/env/common/packagejson';
 import { IHeatmapService } from '../../../platform/heatmap/common/heatmapService';
@@ -33,6 +35,14 @@ export interface IExtensionActivationConfiguration {
 
 export async function baseActivate(configuration: IExtensionActivationConfiguration) {
 	const context = configuration.context;
+	// Initialize dynamic ID namespacing early so any subsequent registrations that opt-in can
+	// resolve the correct extension id (upstream or fork) consistently.
+	try {
+		initializeNamespace(context.extension.id);
+	} catch (err) {
+		// Non-fatal: namespacing is optional; log verbose info if something unexpected occurs.
+		console.trace('[namespace:init] failed', err);
+	}
 	if (context.extensionMode === ExtensionMode.Test && !configuration.forceActivation && !isScenarioAutomation) {
 		// FIXME Running in tests, don't activate the extension
 		// Avoid bundling the extension code in the test bundle
@@ -71,6 +81,8 @@ export async function baseActivate(configuration: IExtensionActivationConfigurat
 		// THIS is awaited because some contributions can block activation
 		// via `IExtensionContribution#activationBlocker`
 		const contributions = instantiationService.createInstance(ContributionCollection, configuration.contributions);
+		// Register brand artifacts (prompt augmentors, custom participants, etc.)
+		registerBrandArtifacts(instantiationService as any);
 		context.subscriptions.push(contributions);
 		await contributions.waitForActivationBlockers();
 	});

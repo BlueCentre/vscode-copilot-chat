@@ -989,7 +989,7 @@ class ApplyPatchInstructions extends PromptElement<DefaultAgentPromptProps & { t
 	async render(state: void, sizing: PromptSizing) {
 		const isGpt5 = this.props.modelFamily?.startsWith('gpt-5') === true;
 		return <Tag name='applyPatchInstructions'>
-			To edit files in the workspace, use the {ToolName.ApplyPatch} tool. If you have issues with it, you should first try to fix your patch and continue using {ToolName.ApplyPatch}. {this.props.tools[ToolName.EditFile] && <>If you are stuck, you can fall back on the {ToolName.EditFile} tool, but {ToolName.ApplyPatch} is much faster and is the preferred tool.</>}<br />
+			To edit files in the workspace, use the {ToolName.ApplyPatch} tool. If you have issues with it, you should first try to fix your patch and continue using {ToolName.ApplyPatch}.{this.props.tools[ToolName.EditFile] && <> If you are stuck, you can fall back on the {ToolName.EditFile} tool, but {ToolName.ApplyPatch} is much faster and is the preferred tool.</>}<br />
 			{isGpt5 && <>Prefer the smallest set of changes needed to satisfy the task. Avoid reformatting unrelated code; preserve existing style and public APIs unless the task requires changes. When practical, complete all edits for a file within a single message.<br /></>}
 			The input for this tool is a string representing the patch to apply, following a special format. For each snippet of code that needs to be changed, repeat the following:<br />
 			<ApplyPatchFormatInstructions /><br />
